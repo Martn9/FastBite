@@ -32,4 +32,11 @@ Repositorio oficial del proyecto FastBite para la asignatura de Diseño de Softw
 * **Informe:** Redactar el **Avance del proyecto** y la **Evolución del sistema**, detallando el estado inicial, cambios (como añadir al Repartidor), y mejoras incorporadas.
 * **Informe:** Documentar el **Backlog y participación del equipo**, extrayendo las capturas de las tarjetas de Trello.
 * **Presentación:** Armar el PPT (Problema, Arquitectura, SOLID, Patrones, Evolución).
-* **Presentación:** Configurar los datos de prueba y ensayar la **Demostración en vivo** para asegurar que la ejecución fluya frente al profesor.
+* **Presentación:** Configurar los datos de prueba y ensayar la **Demostración en vivo** para asegurar que la ejecución fluya frente al profesor.   
+
+---
+
+## Patrones utlizados 
+
+*Diseñamos el backend como una API independiente para que el sistema sea escalable. Si quisiéramos lanzar FastBite como una aplicación móvil para iOS o Android, no tendríamos que tocar ni una sola línea de nuestro código en Python. La nueva app móvil simplemente consumiría esta misma API que ya tenemos lista.
+
