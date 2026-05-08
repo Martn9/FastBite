@@ -102,3 +102,49 @@ total = pedido.calcular_total()
 ### Objetivo general
 
 Con esta implementación, mi parte del proyecto aporta una base para manejar roles de usuario mediante Factory y aplicar promociones sobre pedidos mediante Decorator. Esto ayuda a mantener el código más organizado, con menor acoplamiento y preparado para futuras extensiones del sistema.
+
+## Implementación realizada por Cristoper
+
+Durante esta entrega se implementó el patrón de comportamiento State y la lógica del carrito de pedidos dentro del sistema FastBite.
+
+### Patrón de Comportamiento – State
+
+Se implementó el patrón State en el archivo:
+
+pedidos/states.py
+
+Se crearon clases independientes para cada estado del pedido dentro del sistema:
+
+- EstadoPendiente
+- EstadoPreparando
+- EstadoEnCamino
+- EstadoEntregado
+
+Cada clase sabe cómo avanzar al siguiente estado. El modelo `Pedido` delega la transición a su estado actual mediante `avanzar_estado()`, sin necesidad de usar bloques `if/else`.
+
+Ejemplo de uso:
+
+```python
+pedido = Pedido.objects.get(id=1)
+pedido.avanzar_estado()  # Pendiente -> Preparando
+pedido.avanzar_estado()  # Preparando -> En Camino
+pedido.avanzar_estado()  # En Camino -> Entregado
+```
+
+### Lógica del carrito y pedidos
+
+Se creó la app `pedidos` con los siguientes archivos:
+
+- `pedidos/models.py` — Modelos Pedido e ItemPedido
+- `pedidos/services.py` — Lógica de creación del pedido y avance de estado
+- `pedidos/api.py` — Endpoints REST del módulo de pedidos
+
+Endpoints implementados:
+
+- `POST /api/pedidos/pedidos` — Crear un nuevo pedido
+- `GET /api/pedidos/pedidos/{id}` — Consultar estado del pedido
+- `POST /api/pedidos/pedidos/{id}/avanzar` — Avanzar al siguiente estado
+
+### Objetivo general
+
+Con esta implementación se incorpora la lógica transaccional del carrito y un manejo limpio de los estados del pedido mediante el patrón State, eliminando condicionales dispersos y facilitando agregar nuevos estados en el futuro.
