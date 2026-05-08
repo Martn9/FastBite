@@ -32,11 +32,73 @@ Repositorio oficial del proyecto FastBite para la asignatura de Diseño de Softw
 * **Informe:** Redactar el **Avance del proyecto** y la **Evolución del sistema**, detallando el estado inicial, cambios (como añadir al Repartidor), y mejoras incorporadas.
 * **Informe:** Documentar el **Backlog y participación del equipo**, extrayendo las capturas de las tarjetas de Trello.
 * **Presentación:** Armar el PPT (Problema, Arquitectura, SOLID, Patrones, Evolución).
-* **Presentación:** Configurar los datos de prueba y ensayar la **Demostración en vivo** para asegurar que la ejecución fluya frente al profesor.   
-
----
+* **Presentación:** Configurar los datos de prueba y ensayar la **Demostración en vivo** para asegurar que la ejecución fluya frente al profesor.
 
 ## Patrones utlizados 
 
 *Diseñamos el backend como una API independiente para que el sistema sea escalable. Si quisiéramos lanzar FastBite como una aplicación móvil para iOS o Android, no tendríamos que tocar ni una sola línea de nuestro código en Python. La nueva app móvil simplemente consumiría esta misma API que ya tenemos lista.
 
+---
+
+## Implementación realizada por Gerlac Reyes
+
+Durante esta entrega se implementaron dos patrones de diseño dentro del sistema FastBite con el objetivo de mejorar la organización, reutilización y extensibilidad del proyecto.
+
+### Patrón Creacional – Factory
+
+Se implementó el patrón Factory en el archivo:
+
+catalogo/patterns/factories/usuario_factory.py
+
+Se creó una fábrica de usuarios llamada `UsuarioFactory`, encargada de generar automáticamente distintos tipos de usuarios según el rol solicitado dentro del sistema.
+
+Actualmente permite crear:
+
+- Cliente
+- Administrador
+- Repartidor
+
+Cada tipo de usuario hereda de una clase base llamada `Usuario`.
+
+La finalidad de este patrón es centralizar la creación de objetos y evitar crear usuarios manualmente en distintas partes del sistema. Además, permite agregar nuevos tipos de usuarios en el futuro sin modificar la lógica principal del sistema.
+
+Ejemplo de uso:
+
+```python
+cliente = UsuarioFactory.crear_usuario(
+    "cliente",
+    "Gerlac Reyes",
+    "gerlac@fastbite.cl"
+)
+```
+
+### Patrón Estructural – Decorator
+
+Se implementó el patrón Decorator en el archivo:
+
+catalogo/patterns/decorators/descuento_decorator.py
+
+Se creó una clase base llamada `PedidoBase`, que representa un pedido con subtotal y costo de envío. Sobre esa clase se aplican decoradores para modificar el total final sin cambiar directamente la clase principal.
+
+Actualmente se implementaron:
+
+- Descuento porcentual
+- Descuento fijo
+- Envío gratis
+
+El objetivo de este patrón es permitir agregar descuentos y promociones de forma dinámica, reutilizable y fácil de extender.
+
+Ejemplo de uso:
+
+```python
+pedido = PedidoBase(subtotal=10000, costo_envio=2000)
+
+pedido = DescuentoPorcentajeDecorator(pedido, 10)
+pedido = EnvioGratisDecorator(pedido)
+
+total = pedido.calcular_total()
+```
+
+### Objetivo general
+
+Con esta implementación, mi parte del proyecto aporta una base para manejar roles de usuario mediante Factory y aplicar promociones sobre pedidos mediante Decorator. Esto ayuda a mantener el código más organizado, con menor acoplamiento y preparado para futuras extensiones del sistema.
