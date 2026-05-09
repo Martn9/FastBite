@@ -8,6 +8,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import RedirectView
 from ninja import NinjaAPI
 from catalogo.api import router as catalogo_router
 
@@ -22,5 +23,5 @@ api.add_router("/catalogo/", catalogo_router)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', api.urls), # <- ¡Esta es la línea clave que le avisa a Django que existe Swagger!
-    
+    path('', RedirectView.as_view(url='/admin/', permanent=False)),
 ]
