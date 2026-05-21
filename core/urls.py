@@ -5,11 +5,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import RedirectView
 from ninja import NinjaAPI
+from usuarios.api import router as usuarios_router
 from catalogo.api import router as catalogo_router
 from pedidos.api import router as pedidos_router
 
@@ -21,6 +21,7 @@ api = NinjaAPI(
 
 api.add_router("/catalogo/", catalogo_router)
 api.add_router("/pedidos/", pedidos_router)
+api.add_router("/usuarios/", usuarios_router)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

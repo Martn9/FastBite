@@ -10,7 +10,7 @@ def crear_pedido(request, data: CrearPedidoSchema):
     Crea un nuevo pedido con sus items. Estado inicial: pendiente.
     """
     items = [item.dict() for item in data.items]
-    pedido = services.crear_pedido(data.cliente_nombre, items)
+    pedido = services.crear_pedido(request.user, items)
     return pedido
 
 
