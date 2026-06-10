@@ -3,6 +3,17 @@ Django==6.0.5
 sqlparse==0.5.5
 django-ninja
 psycopg
+psycopg2-binary
 djangorestframework
 djangorestframework-simplejwt
-psycopg2-binary
+python-decouple
+dj-database-url
+
+# Testing
+pytest
+pytest-django
+pytest-cov
+
+# Code quality
+black
+flake8
