@@ -5,6 +5,7 @@ from . import services  # Importamos nuestra capa de lógica de negocio
 
 router = Router()
 
+
 @router.get("/restaurantes", response=List[RestauranteSchema])
 def listar_restaurantes(request):
     """
@@ -12,6 +13,7 @@ def listar_restaurantes(request):
     """
     restaurantes = services.obtener_todos_los_restaurantes()
     return restaurantes
+
 
 @router.get("/restaurantes/{restaurante_id}/productos", response=List[ProductoSchema])
 def listar_productos_por_restaurante(request, restaurante_id: int):

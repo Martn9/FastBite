@@ -6,13 +6,13 @@ from .models import Pedido, ItemPedido
 class ItemPedidoSchema(ModelSchema):
     class Meta:
         model = ItemPedido
-        fields = ['id', 'producto', 'cantidad', 'precio_unitario']
+        fields = ["id", "producto", "cantidad", "precio_unitario"]
 
 
 class PedidoSchema(ModelSchema):
     class Meta:
         model = Pedido
-        fields = ['id', 'cliente', 'estado', 'creado_en']
+        fields = ["id", "cliente", "estado", "creado_en"]
 
 
 class CrearItemSchema(Schema):

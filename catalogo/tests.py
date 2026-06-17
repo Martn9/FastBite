@@ -5,14 +5,14 @@ from catalogo import services
 
 # ─── Importaciones del Patrón Decorator ────────────────────
 from catalogo.patterns.decorators.descuento_decorator import (
-    PedidoBase, 
-    DescuentoPorcentajeDecorator, 
+    PedidoBase,
+    DescuentoPorcentajeDecorator,
     DescuentoFijoDecorator,
-    EnvioGratisDecorator
+    EnvioGratisDecorator,
 )
 
-
 # ─── Fixtures ────────────────────────────────────────────
+
 
 @pytest.fixture
 def restaurante(db):
@@ -51,6 +51,7 @@ def producto_no_disponible(restaurante):
 
 # ─── Tests de Model ───────────────────────────────────────
 
+
 @pytest.mark.django_db
 def test_crear_restaurante(restaurante):
     assert restaurante.nombre == "Test Burger"
@@ -58,6 +59,7 @@ def test_crear_restaurante(restaurante):
 
 
 # ─── Tests de Services ────────────────────────────────────
+
 
 @pytest.mark.django_db
 def test_obtener_todos_los_restaurantes(restaurante):
@@ -83,29 +85,32 @@ def test_obtener_productos_restaurante_inexistente():
 
 # ─── Tests del Patrón Decorator ────────────────────────────
 
+
 def test_descuento_decorator_porcentual():
     # Se crea un pedido base con 10.000 de subtotal y 2.000 de envío (Total = 12.000)
     pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
-    
+
     # Se aplica un 10% de descuento al TOTAL (12.000 - 1.200 = 10.800)
     pedido_con_descuento = DescuentoPorcentajeDecorator(pedido_base, porcentaje=10)
-    
+
     assert pedido_con_descuento.calcular_total() == 10800
+
 
 def test_descuento_decorator_fijo():
     # Se crea un pedido base con 10.000 de subtotal y 2.000 de envío (Total = 12.000)
     pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
-    
+
     # Se aplica un descuento fijo de 3.000 pesos al TOTAL (12.000 - 3.000 = 9.000)
     pedido_con_descuento = DescuentoFijoDecorator(pedido_base, monto=3000)
-    
+
     assert pedido_con_descuento.calcular_total() == 9000
+
 
 def test_descuento_decorator_envio_gratis():
     # Se crea un pedido base con 10.000 de subtotal y 2.000 de envío (Total = 12.000)
     pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
-    
+
     # Se aplica envío gratis que resta los 2000 del costo de envío (12.000 - 2.000 = 10.000)
     pedido_con_descuento = EnvioGratisDecorator(pedido_base)
-    
+
     assert pedido_con_descuento.calcular_total() == 10000

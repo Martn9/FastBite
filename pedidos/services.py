@@ -9,24 +9,15 @@ def crear_pedido(cliente, items: list):
     crea el pedido y sus items.
     """
 
-    primer_producto = get_object_or_404(
-        Producto,
-        id=items[0]['producto_id']
-    )
+    primer_producto = get_object_or_404(Producto, id=items[0]["producto_id"])
 
     restaurante = primer_producto.restaurante
 
-    pedido = Pedido.objects.create(
-        cliente=cliente,
-        restaurante=restaurante
-    )
+    pedido = Pedido.objects.create(cliente=cliente, restaurante=restaurante)
 
     for item in items:
 
-        producto = get_object_or_404(
-            Producto,
-            id=item['producto_id']
-        )
+        producto = get_object_or_404(Producto, id=item["producto_id"])
 
         # Validar que todos los productos
         # pertenezcan al mismo restaurante
@@ -38,7 +29,7 @@ def crear_pedido(cliente, items: list):
         ItemPedido.objects.create(
             pedido=pedido,
             producto=producto,
-            cantidad=item['cantidad'],
+            cantidad=item["cantidad"],
             precio_unitario=producto.precio,
         )
 

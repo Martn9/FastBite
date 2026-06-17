@@ -14,16 +14,9 @@ def registro_cliente(request, username: str, email: str, password: str):
     if User.objects.filter(username=username).exists():
         return {"error": "El usuario ya existe"}
 
-    user = User.objects.create_user(
-        username=username,
-        email=email,
-        password=password
-    )
+    user = User.objects.create_user(username=username, email=email, password=password)
 
-    PerfilUsuario.objects.create(
-        user=user,
-        rol="cliente"
-    )
+    PerfilUsuario.objects.create(user=user, rol="cliente")
 
     return {"mensaje": "Cliente creado correctamente"}
 
@@ -34,16 +27,9 @@ def registro_repartidor(request, username: str, email: str, password: str):
     if User.objects.filter(username=username).exists():
         return {"error": "El usuario ya existe"}
 
-    user = User.objects.create_user(
-        username=username,
-        email=email,
-        password=password
-    )
+    user = User.objects.create_user(username=username, email=email, password=password)
 
-    PerfilUsuario.objects.create(
-        user=user,
-        rol="repartidor"
-    )
+    PerfilUsuario.objects.create(user=user, rol="repartidor")
 
     return {"mensaje": "Repartidor creado correctamente"}
 
@@ -51,10 +37,7 @@ def registro_repartidor(request, username: str, email: str, password: str):
 @router.post("/login")
 def login(request, username: str, password: str):
 
-    user = authenticate(
-        username=username,
-        password=password
-    )
+    user = authenticate(username=username, password=password)
 
     if not user:
         return {"error": "Credenciales incorrectas"}
@@ -65,5 +48,5 @@ def login(request, username: str, password: str):
         "access": str(refresh.access_token),
         "refresh": str(refresh),
         "usuario": user.username,
-        "rol": user.perfil.rol
+        "rol": user.perfil.rol,
     }

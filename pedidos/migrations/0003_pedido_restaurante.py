@@ -7,15 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('catalogo', '0001_initial'),
-        ('pedidos', '0002_remove_pedido_cliente_nombre_pedido_cliente'),
+        ("catalogo", "0001_initial"),
+        ("pedidos", "0002_remove_pedido_cliente_nombre_pedido_cliente"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pedido',
-            name='restaurante',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='pedidos', to='catalogo.restaurante'),
+            model_name="pedido",
+            name="restaurante",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="pedidos",
+                to="catalogo.restaurante",
+            ),
             preserve_default=False,
         ),
     ]

@@ -10,15 +10,12 @@ from pedidos.states import (
     EstadoEntregado,
 )
 
-
 # ─── Fixtures ────────────────────────────────────────────
+
 
 @pytest.fixture
 def usuario(db):
-    return User.objects.create_user(
-        username="testuser",
-        password="testpass123"
-    )
+    return User.objects.create_user(username="testuser", password="testpass123")
 
 
 @pytest.fixture
@@ -55,6 +52,7 @@ def pedido(usuario, restaurante):
 
 # ─── Tests del patrón State ───────────────────────────────
 
+
 @pytest.mark.django_db
 def test_pendiente_avanza_a_preparando(pedido):
     EstadoPendiente().avanzar(pedido)
@@ -89,6 +87,7 @@ def test_entregado_no_puede_avanzar(pedido):
 
 
 # ─── Tests de Services ────────────────────────────────────
+
 
 @pytest.mark.django_db
 def test_crear_pedido_exitoso(usuario, producto):
@@ -145,7 +144,9 @@ def test_obtener_pedido(pedido):
     resultado = services.obtener_pedido(pedido.id)
     assert resultado.id == pedido.id
 
+
 # ─── Tests de nombre() en States ─────────────────────────
+
 
 def test_nombre_estado_pendiente():
     assert EstadoPendiente().nombre() == "pendiente"
@@ -164,6 +165,7 @@ def test_nombre_estado_entregado():
 
 
 # ─── Tests de __str__ y subtotal en Models ───────────────
+
 
 @pytest.mark.django_db
 def test_str_pedido(pedido):

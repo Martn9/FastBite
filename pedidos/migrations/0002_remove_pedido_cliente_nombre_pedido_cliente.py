@@ -8,19 +8,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pedidos', '0001_initial'),
+        ("pedidos", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='pedido',
-            name='cliente_nombre',
+            model_name="pedido",
+            name="cliente_nombre",
         ),
         migrations.AddField(
-            model_name='pedido',
-            name='cliente',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='pedidos', to=settings.AUTH_USER_MODEL),
+            model_name="pedido",
+            name="cliente",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="pedidos",
+                to=settings.AUTH_USER_MODEL,
+            ),
             preserve_default=False,
         ),
     ]

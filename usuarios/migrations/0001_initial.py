@@ -15,11 +15,36 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='PerfilUsuario',
+            name="PerfilUsuario",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('rol', models.CharField(choices=[('cliente', 'Cliente'), ('admin', 'Administrador'), ('repartidor', 'Repartidor')], max_length=20)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='perfil', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "rol",
+                    models.CharField(
+                        choices=[
+                            ("cliente", "Cliente"),
+                            ("admin", "Administrador"),
+                            ("repartidor", "Repartidor"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="perfil",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
