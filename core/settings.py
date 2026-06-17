@@ -62,11 +62,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
+
+# ─── CONFIGURACIÓN DINÁMICA DE BASE DE DATOS ────────────────────────────
+# Obtenemos la URL de la BD. Si no existe (como en GitHub Actions), usa SQLite.
+db_url = config("DATABASE_URL", default="sqlite:///db.sqlite3")
+
 DATABASES = {
     "default": dj_database_url.config(
-        default=config("DATABASE_URL"), conn_max_age=600, ssl_require=True
+        default=db_url, 
+        conn_max_age=600, 
+        # ¡La magia! Solo exige SSL si la base de datos NO es SQLite
+        ssl_require=not db_url.startswith("sqlite")
     )
 }
+# ────────────────────────────────────────────────────────────────────────
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
