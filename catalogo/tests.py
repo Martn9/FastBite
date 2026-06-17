@@ -3,6 +3,9 @@ from django.http import Http404
 from catalogo.models import Restaurante, Producto
 from catalogo import services
 
+# Ajuste de ruta según el README del repositorio
+from catalogo.patterns.decorators.descuento_decorator import PedidoBase, DescuentoPorcentual, DescuentoFijo
+
 
 # ─── Fixtures ────────────────────────────────────────────
 
@@ -71,3 +74,24 @@ def test_obtener_productos_solo_devuelve_disponibles(
 def test_obtener_productos_restaurante_inexistente():
     with pytest.raises(Http404):
         services.obtener_productos_de_restaurante(9999)
+
+
+# ─── Tests del Patrón Decorator ────────────────────────────
+# Nota: Si los nombres de tus clases varían ligeramente, ajústalos aquí.
+
+def test_descuento_decorator_porcentual():
+    # Se crea un pedido base con 10.000 de subtotal y 2.000 de envío
+    pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
+    
+    # Se aplica un 10% de descuento al subtotal (10.000 - 1.000 = 9.000 + 2.000 = 11.000)
+    pedido_con_descuento = DescuentoPorcentual(pedido_base, porcentaje=10)
+    
+    assert pedido_con_descuento.calcular_total() == 11000
+
+def test_descuento_decorator_fijo():
+    pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
+    
+    # Se aplica un descuento fijo de 3.000 pesos (10.000 - 3.000 = 7.000 + 2.000 = 9.000)
+    pedido_con_descuento = DescuentoFijo(pedido_base, descuento=3000)
+    
+    assert pedido_con_descuento.calcular_total() == 9000

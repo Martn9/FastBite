@@ -4,6 +4,9 @@ from ninja.testing import TestClient
 from usuarios.api import router
 from usuarios.models import PerfilUsuario
 
+# Ajuste de ruta según el README del repositorio
+from catalogo.patterns.factories.usuario_factory import UsuarioFactory 
+
 client = TestClient(router)
 
 
@@ -70,3 +73,16 @@ def test_login_credenciales_incorrectas():
     )
     assert response.status_code == 200
     assert "error" in response.json()
+
+
+# ─── Tests del Patrón Factory ──────────────────────────────
+
+@pytest.mark.django_db
+def test_usuario_factory_crea_cliente():
+    user = UsuarioFactory.crear_usuario(tipo="cliente", username="cli1", email="cli1@test.com", password="123")
+    assert user.perfil.rol == "cliente"
+
+@pytest.mark.django_db
+def test_usuario_factory_crea_repartidor():
+    user = UsuarioFactory.crear_usuario(tipo="repartidor", username="rep1", email="rep1@test.com", password="123")
+    assert user.perfil.rol == "repartidor"
