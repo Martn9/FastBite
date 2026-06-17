@@ -4,8 +4,13 @@ from ninja.testing import TestClient
 from usuarios.api import router
 from usuarios.models import PerfilUsuario
 
-# Ajuste de ruta según el README del repositorio
-from catalogo.patterns.factories.usuario_factory import UsuarioFactory 
+# ─── Importación del Patrón Factory ─────────────────────────
+from catalogo.patterns.factories.usuario_factory import (
+    UsuarioFactory, 
+    Cliente, 
+    Repartidor, 
+    Administrador
+)
 
 client = TestClient(router)
 
@@ -77,12 +82,22 @@ def test_login_credenciales_incorrectas():
 
 # ─── Tests del Patrón Factory ──────────────────────────────
 
-@pytest.mark.django_db
 def test_usuario_factory_crea_cliente():
-    user = UsuarioFactory.crear_usuario(tipo="cliente", username="cli1", email="cli1@test.com", password="123")
-    assert user.perfil.rol == "cliente"
+    user = UsuarioFactory.crear_usuario(tipo="cliente", nombre="Juan", correo="juan@test.com")
+    assert isinstance(user, Cliente)
+    assert user.obtener_rol() == "Cliente"
+    assert user.nombre == "Juan"
 
-@pytest.mark.django_db
 def test_usuario_factory_crea_repartidor():
-    user = UsuarioFactory.crear_usuario(tipo="repartidor", username="rep1", email="rep1@test.com", password="123")
-    assert user.perfil.rol == "repartidor"
+    user = UsuarioFactory.crear_usuario(tipo="repartidor", nombre="Pedro", correo="pedro@test.com")
+    assert isinstance(user, Repartidor)
+    assert user.obtener_rol() == "Repartidor"
+
+def test_usuario_factory_crea_admin():
+    user = UsuarioFactory.crear_usuario(tipo="admin", nombre="Jefe", correo="jefe@test.com")
+    assert isinstance(user, Administrador)
+    assert user.obtener_rol() == "Administrador"
+
+def test_usuario_factory_invalido():
+    with pytest.raises(ValueError, match="Tipo de usuario no válido"):
+        UsuarioFactory.crear_usuario(tipo="vendedor", nombre="Error", correo="error@test.com")
