@@ -69,10 +69,10 @@ db_url = config("DATABASE_URL", default="sqlite:///db.sqlite3")
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=db_url, 
-        conn_max_age=600, 
+        default=db_url,
+        conn_max_age=600,
         # ¡La magia! Solo exige SSL si la base de datos NO es SQLite
-        ssl_require=not db_url.startswith("sqlite")
+        ssl_require=not db_url.startswith("sqlite"),
     )
 }
 # ────────────────────────────────────────────────────────────────────────
