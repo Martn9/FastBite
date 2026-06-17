@@ -36,7 +36,8 @@ jobs:
 
     - name: Ejecutar Pruebas (Testing) y Cobertura
       env:
-        DJANGO_SETTINGS_MODULE: FastBite.settings
+        PYTHONPATH: "."
+        DJANGO_SETTINGS_MODULE: "core.settings"
         SECRET_KEY: "secreto-temporal-solo-para-github-actions"
         DATABASE_URL: "sqlite:///db.sqlite3"
         DEBUG: "True"
