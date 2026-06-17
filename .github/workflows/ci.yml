@@ -37,6 +37,9 @@ jobs:
     - name: Ejecutar Pruebas (Testing) y Cobertura
       env:
         DJANGO_SETTINGS_MODULE: FastBite.settings
+        SECRET_KEY: "secreto-temporal-solo-para-github-actions"
+        DATABASE_URL: "sqlite:///db.sqlite3"
+        DEBUG: "True"
       run: |
         pytest --cov=. --cov-report=xml
 
