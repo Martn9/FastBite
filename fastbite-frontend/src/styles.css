@@ -1,0 +1,367 @@
+:root {
+  --charcoal: #1b1815;
+  --cream: #f4efe6;
+  --ember: #d6502c;
+  --ember-dark: #a93c1f;
+  --olive: #5c6b4f;
+  --paper: #fffdf8;
+  --line: #d8cfc0;
+
+  --font-display: "Archivo Black", sans-serif;
+  --font-mono: "Space Mono", monospace;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.75rem;
+  border-bottom: 3px solid var(--charcoal);
+  background: var(--paper);
+}
+
+.navbar .brand {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: var(--ember);
+  text-decoration: none;
+}
+
+.navbar nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.navbar nav a,
+.navbar nav button {
+  background: none;
+  border: none;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--charcoal);
+  padding: 0;
+}
+
+.navbar .cart-pill {
+  background: var(--charcoal);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.navbar .role-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--olive);
+  text-transform: uppercase;
+}
+
+/* ---------- Layout ---------- */
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 4rem;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin: 0 0 0.4rem;
+}
+
+.page-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--olive);
+  margin: 0 0 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Cards ---------- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.1rem;
+}
+
+.card {
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 10px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: var(--charcoal);
+  transition: transform 0.12s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--ember);
+  letter-spacing: 0.05em;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #5a5650;
+}
+
+.card .meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--olive);
+  margin-top: 0.3rem;
+}
+
+/* ---------- Product row ---------- */
+.product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.product-row .info h4 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.product-row .info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b665e;
+  max-width: 38ch;
+}
+
+.product-row .price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.btn {
+  background: var(--ember);
+  color: var(--cream);
+  border: none;
+  border-radius: 7px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.btn:hover {
+  background: var(--ember-dark);
+}
+
+.btn:disabled {
+  background: #c9c2b4;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: none;
+  border: 2px solid var(--charcoal);
+  color: var(--charcoal);
+  border-radius: 7px;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Forms ---------- */
+.form-card {
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 10px;
+  padding: 1.75rem;
+  max-width: 380px;
+}
+
+.form-card label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+  margin-top: 1rem;
+}
+
+.form-card input,
+.form-card select {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: var(--cream);
+}
+
+.form-error {
+  background: #fbe4dd;
+  border: 1.5px solid var(--ember);
+  color: var(--ember-dark);
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  margin-top: 1.1rem;
+  color: #6b665e;
+}
+
+/* ---------- Receipt (signature element) ---------- */
+.receipt {
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 4px;
+  padding: 1.75rem;
+  font-family: var(--font-mono);
+  max-width: 420px;
+  position: relative;
+}
+
+.receipt::before,
+.receipt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--cream) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.receipt::before {
+  top: -6px;
+}
+
+.receipt::after {
+  bottom: -6px;
+}
+
+.receipt h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin: 0 0 0.2rem;
+}
+
+.receipt .order-id {
+  font-size: 0.78rem;
+  color: var(--olive);
+  margin-bottom: 1.2rem;
+}
+
+.receipt .stamp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+}
+
+.receipt .stamp-row .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--charcoal);
+  flex-shrink: 0;
+}
+
+.receipt .stamp-row.done .dot {
+  background: var(--ember);
+  border-color: var(--ember);
+}
+
+.receipt .stamp-row.current .dot {
+  background: var(--cream);
+  border-color: var(--ember);
+  box-shadow: 0 0 0 3px rgba(214, 80, 44, 0.25);
+}
+
+.receipt .stamp-row span {
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.receipt .stamp-row.done span {
+  color: var(--charcoal);
+}
+
+.receipt .stamp-row:not(.done):not(.current) span {
+  color: #b4ab9a;
+}
+
+.empty-state {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--olive);
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}

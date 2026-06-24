@@ -1,5 +1,6 @@
 from ninja import Schema, ModelSchema
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from .models import Pedido, ItemPedido
 
 
@@ -9,10 +10,25 @@ class ItemPedidoSchema(ModelSchema):
         fields = ["id", "producto", "cantidad", "precio_unitario"]
 
 
-class PedidoSchema(ModelSchema):
-    class Meta:
-        model = Pedido
-        fields = ["id", "cliente", "estado", "creado_en"]
+class PedidoSchema(Schema):
+    id: int
+    cliente: str
+    repartidor: Optional[str] = None
+    restaurante: str
+    estado: str
+    creado_en: datetime
+
+    @staticmethod
+    def resolve_cliente(obj):
+        return obj.cliente.username
+
+    @staticmethod
+    def resolve_repartidor(obj):
+        return obj.repartidor.username if obj.repartidor else None
+
+    @staticmethod
+    def resolve_restaurante(obj):
+        return obj.restaurante.nombre
 
 
 class CrearItemSchema(Schema):

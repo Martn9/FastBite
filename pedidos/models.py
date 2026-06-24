@@ -17,9 +17,27 @@ class Pedido(models.Model):
         Restaurante, on_delete=models.CASCADE, related_name="pedidos"
     )
 
+    # El repartidor queda null mientras el pedido está "disponible para tomar".
+    # Una vez que un repartidor lo toma, queda asignado y solo él (o un admin)
+    # puede seguir avanzando su estado.
+    repartidor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="entregas",
+    )
+
     estado = models.CharField(max_length=20, choices=ESTADOS, default="pendiente")
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
+
+    # Cada vez que un repartidor rechaza este pedido, queda registrado aquí.
+    # Así no se le vuelve a mostrar como "disponible" a ese mismo repartidor,
+    # y se puede armar su historial de pedidos rechazados.
+    rechazado_por = models.ManyToManyField(
+        User, related_name="pedidos_rechazados", blank=True
+    )
 
     def get_estado(self):
         from .states import ESTADOS
