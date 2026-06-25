@@ -59,16 +59,22 @@ def test_e2e_flujo_completo_fastbite(client):
     pedido_id = datos_pedido.get("id")
 
     # ─── 5. LOGIN DE STAFF/REPARTIDOR PARA AVANZAR ESTADOS ─────
-    # Creamos un superusuario con permisos para avanzar pedidos
-    User.objects.create_superuser(
-        username="repartidor_e2e", email="rep@mail.com", password="Fuerte123"
-    )
+    # Registramos al empleado por la API para que se genere su Perfil automático
+    url_registro_rep = "/api/usuarios/registro-cliente?username=repartidor_e2e&email=rep@mail.com&password=Fuerte123"
+    client.post(url_registro_rep)
 
+    # Truco: Lo buscamos en la base de datos y le damos poder de repartidor
+    from django.contrib.auth.models import User
+
+    repartidor = User.objects.get(username="repartidor_e2e")
+    repartidor.perfil.rol = "repartidor"
+    repartidor.perfil.save()
+
+    # Ahora sí, iniciamos sesión como Repartidor
     url_login_rep = "/api/usuarios/login?username=repartidor_e2e&password=Fuerte123"
     res_login_rep = client.post(url_login_rep)
-    token_rep = res_login_rep.json().get("access")
 
-    # Usamos la llave del repartidor para el resto del flujo
+    token_rep = res_login_rep.json().get("access")
     headers_repartidor = {"HTTP_AUTHORIZATION": f"Bearer {token_rep}"}
 
     # ─── 6. FLUJO DE ESTADOS (Patrón State) ──────────
