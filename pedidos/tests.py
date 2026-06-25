@@ -135,7 +135,7 @@ def test_crear_pedido_productos_distintos_restaurantes_falla(usuario, producto):
 
 @pytest.mark.django_db
 def test_avanzar_estado_pedido(pedido):
-    pedido_avanzado = services.avanzar_estado_pedido(pedido.id)
+    pedido_avanzado = services.avanzar_estado_pedido(pedido.id, pedido.usuario)
     assert pedido_avanzado.estado == "preparando"
 
 
