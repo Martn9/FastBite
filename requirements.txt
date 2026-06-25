@@ -5,4 +5,5 @@ djangorestframework-simplejwt
 psycopg2-binary
 dj-database-url
 python-decouple
-PyJWTdjango-cors-headers
+PyJWT
+django-cors-headers
