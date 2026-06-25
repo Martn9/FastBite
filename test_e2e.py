@@ -60,18 +60,20 @@ def test_e2e_flujo_completo_fastbite(client):
 
     # ─── 5. LOGIN DE STAFF/REPARTIDOR PARA AVANZAR ESTADOS ─────
     # Creamos un superusuario con permisos para avanzar pedidos
-    User.objects.create_superuser(username="repartidor_e2e", email="rep@mail.com", password="Fuerte123")
-    
+    User.objects.create_superuser(
+        username="repartidor_e2e", email="rep@mail.com", password="Fuerte123"
+    )
+
     url_login_rep = "/api/usuarios/login?username=repartidor_e2e&password=Fuerte123"
     res_login_rep = client.post(url_login_rep)
     token_rep = res_login_rep.json().get("access")
-    
+
     # Usamos la llave del repartidor para el resto del flujo
     headers_repartidor = {"HTTP_AUTHORIZATION": f"Bearer {token_rep}"}
 
     # ─── 6. FLUJO DE ESTADOS (Patrón State) ──────────
     url_avanzar = f"/api/pedidos/pedidos/{pedido_id}/avanzar"
-    
+
     for estado_esperado in ["preparando", "en_camino", "entregado"]:
         # Le enviamos los headers del REPARTIDOR, no del cliente
         res = client.post(url_avanzar, **headers_repartidor)
