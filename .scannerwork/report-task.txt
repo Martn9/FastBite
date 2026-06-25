@@ -1,0 +1,6 @@
+projectKey=INFO1156-GTM
+serverUrl=https://sonarqube.inf.uct.cl
+serverVersion=26.3.0.120487
+dashboardUrl=https://sonarqube.inf.uct.cl/dashboard?id=INFO1156-GTM
+ceTaskId=393e1deb-b978-405b-9b13-d5131ab35be4
+ceTaskUrl=https://sonarqube.inf.uct.cl/api/ce/task?id=393e1deb-b978-405b-9b13-d5131ab35be4

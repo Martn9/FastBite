@@ -7,14 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pedidos', '0004_pedido_repartidor'),
+        ("pedidos", "0004_pedido_repartidor"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pedido',
-            name='rechazado_por',
-            field=models.ManyToManyField(blank=True, related_name='pedidos_rechazados', to=settings.AUTH_USER_MODEL),
+            model_name="pedido",
+            name="rechazado_por",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="pedidos_rechazados",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]
