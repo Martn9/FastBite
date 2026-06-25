@@ -67,7 +67,7 @@ def test_e2e_flujo_completo_fastbite(client):
     from django.contrib.auth.models import User
 
     repartidor = User.objects.get(username="repartidor_e2e")
-    repartidor.perfil.rol = "repartidor"
+    repartidor.perfil.rol = "admin"
     repartidor.perfil.save()
 
     # Ahora sí, iniciamos sesión como Repartidor
