@@ -135,14 +135,14 @@ def test_crear_pedido_productos_distintos_restaurantes_falla(usuario, producto):
 
 @pytest.mark.django_db
 def test_avanzar_estado_pedido(pedido):
-    @pytest.mark.django_db
-    def test_avanzar_estado_pedido(pedido):
-        # Le damos el pase VIP de admin al usuario de prueba temporalmente
-        pedido.cliente.perfil.rol = "admin"
-        pedido.cliente.perfil.save()
+    # 1. Le damos el pase VIP de admin al usuario de prueba temporalmente
+    pedido.cliente.perfil.rol = "admin"
+    pedido.cliente.perfil.save()
 
-        pedido_avanzado = services.avanzar_estado_pedido(pedido.id, pedido.cliente)
+    # 2. Ejecutamos la función para avanzar el pedido (¡la que se había borrado!)
+    pedido_avanzado = services.avanzar_estado_pedido(pedido.id, pedido.cliente)
 
+    # 3. Verificamos que el estado avanzó correctamente
     assert pedido_avanzado.estado == "preparando"
 
 
