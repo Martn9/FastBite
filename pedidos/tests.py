@@ -137,14 +137,16 @@ def test_crear_pedido_productos_distintos_restaurantes_falla(usuario, producto):
 def test_avanzar_estado_pedido(pedido):
     # 1. Importamos el modelo con el nombre correcto: PerfilUsuario
     from usuarios.models import PerfilUsuario
-
+    
     # 2. Le creamos el perfil asignándole el rol de admin para saltar la seguridad
     perfil, created = PerfilUsuario.objects.get_or_create(user=pedido.cliente)
     perfil.rol = "admin"
     perfil.save()
-
-    # 3. Ejecutamos la lógica de avance de estado
-    pedido_avanzado = services.avanzar_estado_pedido(pedido.id)
+    
+    # 3. Ejecutamos la lógica de avance de estado ¡Pasando el usuario también!
+    pedido_avanzado = services.avanzar_estado_pedido(pedido.id, pedido.cliente)
+    
+    # 4. Verificamos que el estado avanzó correctamente
     assert pedido_avanzado.estado == "preparando"
 
 
