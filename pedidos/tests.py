@@ -135,20 +135,16 @@ def test_crear_pedido_productos_distintos_restaurantes_falla(usuario, producto):
 
 @pytest.mark.django_db
 def test_avanzar_estado_pedido(pedido):
-    # Importamos el modelo Perfil
-    from usuarios.models import Perfil
-
-    # Obtenemos o creamos el perfil para este usuario
-    perfil, created = Perfil.objects.get_or_create(user=pedido.cliente)
-
-    # Ahora sí, le damos el pase VIP de admin
+    # 1. Importamos el modelo con el nombre correcto: PerfilUsuario
+    from usuarios.models import PerfilUsuario
+    
+    # 2. Le creamos el perfil asignándole el rol de admin para saltar la seguridad
+    perfil, created = PerfilUsuario.objects.get_or_create(user=pedido.cliente)
     perfil.rol = "admin"
     perfil.save()
 
-    # Ejecutamos la función
-    pedido_avanzado = services.avanzar_estado_pedido(pedido.id, pedido.cliente)
-
-    # Verificamos
+    # 3. Ejecutamos la lógica de avance de estado
+    pedido_avanzado = services.avanzar_estado_pedido(pedido.id)
     assert pedido_avanzado.estado == "preparando"
 
 
