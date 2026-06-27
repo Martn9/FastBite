@@ -28,39 +28,50 @@ export default function Login() {
   }
 
   return (
-    <div className="page" style={{ display: "flex", justifyContent: "center" }}>
-      <form className="form-card" onSubmit={handleSubmit}>
-        <h2 className="page-title" style={{ fontSize: "1.4rem" }}>
-          Ingresar
-        </h2>
-        <label htmlFor="username">Usuario</label>
-        <input
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <p className="form-error">{error}</p>}
-        <button
-          type="submit"
-          className="btn btn-block"
-          style={{ marginTop: "1.4rem" }}
-          disabled={cargando}
-        >
-          {cargando ? "Ingresando..." : "Ingresar"}
-        </button>
-        <p className="form-hint">
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="brand-header">
+          <div className="logo">FastBite</div>
+          <p>Tu comida favorita, cuando quieras</p>
+        </div>
+
+        <h2>Iniciar sesión</h2>
+
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="username">Usuario</label>
+          <input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Tu nombre de usuario"
+            required
+          />
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+          />
+
+          {error && <p className="form-error">{error}</p>}
+
+          <button
+            type="submit"
+            className="btn btn-block"
+            style={{ marginTop: "1.4rem" }}
+            disabled={cargando}
+          >
+            {cargando ? "Ingresando..." : "Ingresar"}
+          </button>
+        </form>
+
+        <p className="form-hint" style={{ textAlign: "center" }}>
           ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
         </p>
-      </form>
+      </div>
     </div>
   );
 }

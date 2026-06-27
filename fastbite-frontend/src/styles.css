@@ -365,3 +365,184 @@ button {
   padding: 1.5rem;
   text-align: center;
 }
+
+/* ---------- Card mejorada ---------- */
+.card-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.delivery-badge {
+  background: var(--ember);
+  color: white;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ---------- Producto mejorado ---------- */
+.product-section-title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--olive);
+  margin: 1.5rem 0 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.promo-row {
+  background: #fff8f0;
+  border: 2px dashed var(--ember);
+  border-radius: 8px;
+  padding: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.promo-badge {
+  background: var(--ember);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+/* ---------- Login / Registro mejorado ---------- */
+.auth-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: var(--cream);
+}
+
+.auth-card {
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 14px;
+  padding: 2.2rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 4px 4px 0px var(--charcoal);
+}
+
+.auth-card .brand-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-card .brand-header .logo {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--ember);
+}
+
+.auth-card .brand-header p {
+  font-size: 0.88rem;
+  color: #6b665e;
+  margin: 0.2rem 0 0;
+}
+
+.auth-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin: 0 0 1.2rem;
+  text-align: center;
+}
+
+/* ---------- Dashboard por rol ---------- */
+.dashboard-banner {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.dashboard-banner.cliente {
+  background: #e8f4fd;
+  border: 2px solid #90c8f0;
+  color: #1a5a8a;
+}
+
+.dashboard-banner.repartidor {
+  background: #edf7ed;
+  border: 2px solid #90d090;
+  color: #1a5a1a;
+}
+
+.dashboard-banner.admin {
+  background: #fdf3e8;
+  border: 2px solid var(--ember);
+  color: var(--ember-dark);
+}
+
+/* ---------- Auth form inputs ---------- */
+.auth-card label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+  margin-top: 1rem;
+}
+
+.auth-card input,
+.auth-card select {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: var(--cream);
+  transition: border-color 0.15s;
+}
+
+.auth-card input:focus,
+.auth-card select:focus {
+  outline: none;
+  border-color: var(--ember);
+}
+
+/* ---------- Rol selector ---------- */
+.rol-selector {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.rol-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+
+.rol-btn.active {
+  border-color: var(--ember);
+  background: #fff0eb;
+  color: var(--ember-dark);
+}

@@ -20,10 +20,24 @@ export default function RestauranteDetalle() {
       .finally(() => setCargando(false));
   }, [id]);
 
+  // Agrupar productos por categoría
+  const categorias = productos.reduce<Record<string, Producto[]>>((acc, p) => {
+    if (!acc[p.categoria]) acc[p.categoria] = [];
+    acc[p.categoria].push(p);
+    return acc;
+  }, {});
+
+  // Promociones primero, luego el resto alfabético
+  const ordenCategorias = Object.keys(categorias).sort((a, b) => {
+    if (a === "Promociones") return -1;
+    if (b === "Promociones") return 1;
+    return a.localeCompare(b);
+  });
+
   return (
     <div className="page">
       <h1 className="page-title">Menú</h1>
-      <p className="page-subtitle">Toca "Agregar" para sumarlo al carrito</p>
+      <p className="page-subtitle">Agrega productos al carrito</p>
 
       {cargando && <p>Cargando productos...</p>}
       {error && <p className="form-error">{error}</p>}
@@ -34,24 +48,37 @@ export default function RestauranteDetalle() {
         </div>
       )}
 
-      <div className="form-card" style={{ maxWidth: "none" }}>
-        {productos.map((p) => (
-          <div className="product-row" key={p.id}>
-            <div className="info">
-              <h4>{p.nombre}</h4>
-              <p>{p.descripcion}</p>
-            </div>
-            <span className="price">${p.precio.toLocaleString("es-CL")}</span>
-            <button
-              className="btn"
-              disabled={!p.disponible}
-              onClick={() => agregar(p)}
+      {ordenCategorias.map((categoria) => (
+        <div key={categoria}>
+          <p className="product-section-title">
+            {categoria === "Promociones" ? "🔥 " : ""}{categoria}
+          </p>
+          {categorias[categoria].map((p) => (
+            <div
+              className={`product-row ${categoria === "Promociones" ? "promo-row" : ""}`}
+              key={p.id}
             >
-              {p.disponible ? "Agregar" : "Sin stock"}
-            </button>
-          </div>
-        ))}
-      </div>
+              <div className="info">
+                <h4>
+                  {p.nombre}
+                  {categoria === "Promociones" && (
+                    <span className="promo-badge">promo</span>
+                  )}
+                </h4>
+                <p>{p.descripcion}</p>
+              </div>
+              <span className="price">${p.precio.toLocaleString("es-CL")}</span>
+              <button
+                className="btn"
+                disabled={!p.disponible}
+                onClick={() => agregar(p)}
+              >
+                {p.disponible ? "Agregar" : "Sin stock"}
+              </button>
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

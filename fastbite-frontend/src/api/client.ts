@@ -50,8 +50,15 @@ export async function login(
     withQuery("/usuarios/login", { username, password }),
     { method: "POST" },
   );
-  return parseOrThrow(res);
-}
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new ApiError(data?.error ?? "Error en la solicitud", res.status);
+  }
+  if (data.error) {
+    throw new ApiError("Usuario o contraseña incorrectos", 401);
+  }
+  return data;
+} 
 
 export async function registrarCliente(
   username: string,

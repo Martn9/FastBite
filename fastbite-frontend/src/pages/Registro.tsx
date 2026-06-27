@@ -11,9 +11,7 @@ export default function Registro() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState<Extract<Rol, "cliente" | "repartidor">>(
-    "cliente",
-  );
+  const [rol, setRol] = useState<Extract<Rol, "cliente" | "repartidor">>("cliente");
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
@@ -32,8 +30,6 @@ export default function Registro() {
         return;
       }
 
-      // Auto-login: evita que alguien crea que ya quedó adentro justo
-      // después de registrarse, cuando en realidad falta este paso.
       await login(username, password);
       navigate("/");
     } catch (err) {
@@ -46,59 +42,82 @@ export default function Registro() {
   }
 
   return (
-    <div className="page" style={{ display: "flex", justifyContent: "center" }}>
-      <form className="form-card" onSubmit={handleSubmit}>
-        <h2 className="page-title" style={{ fontSize: "1.4rem" }}>
-          Crear cuenta
-        </h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="brand-header">
+          <div className="logo">🍔 FastBite</div>
+          <p>Únete y pide en minutos</p>
+        </div>
 
-        <label htmlFor="rol">Tipo de cuenta</label>
-        <select
-          id="rol"
-          value={rol}
-          onChange={(e) => setRol(e.target.value as typeof rol)}
-        >
-          <option value="cliente">Cliente</option>
-          <option value="repartidor">Repartidor</option>
-        </select>
+        <div className="auth-divider" />
 
-        <label htmlFor="username">Usuario</label>
-        <input
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <label htmlFor="email">Correo</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-        />
-        {error && <p className="form-error">{error}</p>}
-        <button
-          type="submit"
-          className="btn btn-block"
-          style={{ marginTop: "1.4rem" }}
-          disabled={cargando}
-        >
-          {cargando ? "Creando..." : "Crear cuenta"}
-        </button>
-        <p className="form-hint">
+        <h2>Crear cuenta</h2>
+
+        <form onSubmit={handleSubmit}>
+          <label>🎭 Tipo de cuenta</label>
+          <div className="rol-selector">
+            <button
+              type="button"
+              className={`rol-btn ${rol === "cliente" ? "active" : ""}`}
+              onClick={() => setRol("cliente")}
+            >
+              🛍️ Cliente
+            </button>
+            <button
+              type="button"
+              className={`rol-btn ${rol === "repartidor" ? "active" : ""}`}
+              onClick={() => setRol("repartidor")}
+            >
+              🛵 Repartidor
+            </button>
+          </div>
+
+          <label htmlFor="username">👤 Usuario</label>
+          <input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Elige un nombre de usuario"
+            required
+          />
+
+          <label htmlFor="email">📧 Correo</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@correo.com"
+            required
+          />
+
+          <label htmlFor="password">🔒 Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mínimo 6 caracteres"
+            required
+            minLength={6}
+          />
+
+          {error && <p className="form-error">{error}</p>}
+
+          <button
+            type="submit"
+            className="btn btn-block"
+            style={{ marginTop: "1.4rem", padding: "0.8rem", fontSize: "1rem" }}
+            disabled={cargando}
+          >
+            {cargando ? "Creando cuenta..." : "Crear cuenta →"}
+          </button>
+        </form>
+
+        <p className="form-hint" style={{ textAlign: "center", marginTop: "1.2rem" }}>
           ¿Ya tienes cuenta? <Link to="/login">Ingresa aquí</Link>
         </p>
-      </form>
+      </div>
     </div>
   );
 }
