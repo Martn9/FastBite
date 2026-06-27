@@ -11,6 +11,11 @@ class Pedido(models.Model):
         ("entregado", "Entregado"),
     ]
 
+    TIPO_ENTREGA_CHOICES = [
+        ("delivery", "Delivery"),
+        ("retiro", "Retiro en Tienda"),
+    ]
+
     cliente = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pedidos")
 
     restaurante = models.ForeignKey(
@@ -29,6 +34,18 @@ class Pedido(models.Model):
     )
 
     estado = models.CharField(max_length=20, choices=ESTADOS, default="pendiente")
+    
+    # --- Campos agregados para control de entrega, pago y calificación ---
+    tipo_entrega = models.CharField(
+        max_length=20, choices=TIPO_ENTREGA_CHOICES, default="delivery"
+    )
+    direccion_entrega = models.CharField(max_length=255, null=True, blank=True)
+    pago_repartidor = models.IntegerField(default=0)
+    
+    confirmado_cliente = models.BooleanField(default=False)
+    calificacion_repartidor = models.PositiveSmallIntegerField(null=True, blank=True)
+    # --------------------------------------------------------------------
+
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 

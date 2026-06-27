@@ -110,7 +110,7 @@ def test_descuento_decorator_envio_gratis():
     # Se crea un pedido base con 10.000 de subtotal y 2.000 de envío (Total = 12.000)
     pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
 
-    # Se aplica envío gratis que resta los 2000 del costo de envío (12.000 - 2.000 = 10.000)
+    # Se aplica envío gratis que resta los 2000 (12.000 - 2.000 = 10.000)
     pedido_con_descuento = EnvioGratisDecorator(pedido_base)
 
     assert pedido_con_descuento.calcular_total() == 10000

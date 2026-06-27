@@ -3,6 +3,7 @@ from ninja import Router
 from .schemas import PedidoSchema, CrearPedidoSchema
 from .auth import JWTAuth
 from . import services
+from .schemas import PedidoSchema, CrearPedidoSchema, CalificarPedidoSchema
 
 router = Router()
 jwt_auth = JWTAuth()
@@ -10,12 +11,14 @@ jwt_auth = JWTAuth()
 
 @router.post("/pedidos", response=PedidoSchema, auth=jwt_auth)
 def crear_pedido(request, data: CrearPedidoSchema):
-    """
-    Crea un nuevo pedido con sus items. Estado inicial: pendiente.
-    Requiere autenticación JWT (Bearer token).
-    """
+    """Crea un nuevo pedido con sus items y tipo de entrega."""
     items = [item.dict() for item in data.items]
-    pedido = services.crear_pedido(request.auth, items)
+    pedido = services.crear_pedido(
+        request.auth, 
+        items,
+        tipo_entrega=data.tipo_entrega,
+        direccion_entrega=data.direccion_entrega
+    )
     return pedido
 
 
@@ -90,3 +93,14 @@ def avanzar_pedido(request, pedido_id: int):
     Solo el admin o el repartidor asignado pueden avanzarlo.
     """
     return services.avanzar_estado_pedido(pedido_id, request.auth)
+
+@router.get("/pedidos/entregados", response=List[PedidoSchema], auth=jwt_auth)
+def listar_entregados(request):
+    """Solo repartidor: historial de pedidos que ya entregó."""
+    return services.listar_entregados(request.auth)
+
+
+@router.post("/pedidos/{pedido_id}/confirmar", response=PedidoSchema, auth=jwt_auth)
+def confirmar_entrega(request, pedido_id: int, data: CalificarPedidoSchema):
+    """El cliente confirma que recibió el pedido y califica al repartidor."""
+    return services.confirmar_entrega_cliente(pedido_id, request.auth, data.calificacion)

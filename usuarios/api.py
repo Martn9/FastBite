@@ -2,6 +2,7 @@ from ninja import Router
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 from .models import PerfilUsuario
 
@@ -50,3 +51,16 @@ def login(request, username: str, password: str):
         "usuario": user.username,
         "rol": user.perfil.rol,
     }
+
+
+@router.post("/refresh")
+def refresh_token(request, refresh: str):
+    """
+    Recibe un refresh token vigente y entrega un nuevo access token,
+    permitiendo renovar la sesión sin volver a pedir credenciales.
+    """
+    try:
+        token = RefreshToken(refresh)
+        return {"access": str(token.access_token)}
+    except TokenError:
+        return {"error": "Refresh token inválido o expirado"}

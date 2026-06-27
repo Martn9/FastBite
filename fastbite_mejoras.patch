@@ -1,0 +1,127 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 8d68593..8c112dc 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -48,4 +48,10 @@ jobs:
+       uses: actions/upload-artifact@v4
+       with:
+         name: coverage-report
+-        path: coverage.xml
+\ No newline at end of file
++        path: coverage.xml
++
++    - name: Análisis de calidad con SonarQube
++      uses: sonarsource/sonarqube-scan-action@v4
++      env:
++        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
++        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+\ No newline at end of file
+diff --git a/catalogo/admin.py b/catalogo/admin.py
+index f57f864..b29915d 100644
+--- a/catalogo/admin.py
++++ b/catalogo/admin.py
+@@ -1,7 +1,5 @@
+ from django.contrib import admin
+ 
+-# Register your models here.
+-from django.contrib import admin
+ from .models import Restaurante, Producto
+ 
+ admin.site.register(Restaurante)
+diff --git a/catalogo/models.py b/catalogo/models.py
+index cc2feb6..552d29f 100644
+--- a/catalogo/models.py
++++ b/catalogo/models.py
+@@ -1,8 +1,5 @@
+ from django.db import models
+ 
+-# Create your models here.
+-from django.db import models
+-
+ 
+ class Restaurante(models.Model):
+     nombre = models.CharField(max_length=100)
+diff --git a/catalogo/tests.py b/catalogo/tests.py
+index bd0357f..6b3f434 100644
+--- a/catalogo/tests.py
++++ b/catalogo/tests.py
+@@ -110,7 +110,7 @@ def test_descuento_decorator_envio_gratis():
+     # Se crea un pedido base con 10.000 de subtotal y 2.000 de envío (Total = 12.000)
+     pedido_base = PedidoBase(subtotal=10000, costo_envio=2000)
+ 
+-    # Se aplica envío gratis que resta los 2000 del costo de envío (12.000 - 2.000 = 10.000)
++    # Se aplica envío gratis que resta los 2000 (12.000 - 2.000 = 10.000)
+     pedido_con_descuento = EnvioGratisDecorator(pedido_base)
+ 
+     assert pedido_con_descuento.calcular_total() == 10000
+diff --git a/catalogo/views.py b/catalogo/views.py
+index 91ea44a..60f00ef 100644
+--- a/catalogo/views.py
++++ b/catalogo/views.py
+@@ -1,3 +1 @@
+-from django.shortcuts import render
+-
+ # Create your views here.
+diff --git a/core/settings.py b/core/settings.py
+index 42b0f7f..af3e88b 100644
+--- a/core/settings.py
++++ b/core/settings.py
+@@ -82,7 +82,7 @@ DATABASES = {
+ 
+ AUTH_PASSWORD_VALIDATORS = [
+     {
+-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
++        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"  # noqa: E501
+     },
+     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+diff --git a/pedidos/schemas.py b/pedidos/schemas.py
+index 887b9ff..c90b5e5 100644
+--- a/pedidos/schemas.py
++++ b/pedidos/schemas.py
+@@ -1,7 +1,7 @@
+ from ninja import Schema, ModelSchema
+ from typing import List, Optional
+ from datetime import datetime
+-from .models import Pedido, ItemPedido
++from .models import ItemPedido
+ 
+ 
+ class ItemPedidoSchema(ModelSchema):
+diff --git a/usuarios/api.py b/usuarios/api.py
+index 01d68a5..4dae938 100644
+--- a/usuarios/api.py
++++ b/usuarios/api.py
+@@ -2,6 +2,7 @@ from ninja import Router
+ from django.contrib.auth.models import User
+ from django.contrib.auth import authenticate
+ from rest_framework_simplejwt.tokens import RefreshToken
++from rest_framework_simplejwt.exceptions import TokenError
+ 
+ from .models import PerfilUsuario
+ 
+@@ -50,3 +51,16 @@ def login(request, username: str, password: str):
+         "usuario": user.username,
+         "rol": user.perfil.rol,
+     }
++
++
++@router.post("/refresh")
++def refresh_token(request, refresh: str):
++    """
++    Recibe un refresh token vigente y entrega un nuevo access token,
++    permitiendo renovar la sesión sin volver a pedir credenciales.
++    """
++    try:
++        token = RefreshToken(refresh)
++        return {"access": str(token.access_token)}
++    except TokenError:
++        return {"error": "Refresh token inválido o expirado"}
+diff --git a/usuarios/views.py b/usuarios/views.py
+index 91ea44a..60f00ef 100644
+--- a/usuarios/views.py
++++ b/usuarios/views.py
+@@ -1,3 +1 @@
+-from django.shortcuts import render
+-
+ # Create your views here.

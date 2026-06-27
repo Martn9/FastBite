@@ -4,28 +4,25 @@ from catalogo.models import Producto
 from django.shortcuts import get_object_or_404
 
 
-def crear_pedido(cliente, items: list):
-    """
-    Lógica transaccional del carrito:
-    crea el pedido y sus items.
-    """
-
+def crear_pedido(cliente, items: list, tipo_entrega: str = "delivery", direccion_entrega: str = None):
     primer_producto = get_object_or_404(Producto, id=items[0]["producto_id"])
-
     restaurante = primer_producto.restaurante
+    
+    # Calculamos un pago al repartidor ficticio (ej. 1500 si es delivery, 0 si es retiro)
+    pago = 1500 if tipo_entrega == "delivery" else 0
 
-    pedido = Pedido.objects.create(cliente=cliente, restaurante=restaurante)
+    pedido = Pedido.objects.create(
+        cliente=cliente, 
+        restaurante=restaurante,
+        tipo_entrega=tipo_entrega,
+        direccion_entrega=direccion_entrega,
+        pago_repartidor=pago
+    )
 
     for item in items:
-
         producto = get_object_or_404(Producto, id=item["producto_id"])
-
-        # Validar que todos los productos
-        # pertenezcan al mismo restaurante
         if producto.restaurante.id != restaurante.id:
-            raise ValueError(
-                "Todos los productos deben pertenecer al mismo restaurante"
-            )
+            raise ValueError("Todos los productos deben pertenecer al mismo restaurante")
 
         ItemPedido.objects.create(
             pedido=pedido,
@@ -80,22 +77,16 @@ def listar_disponibles(usuario):
 
 
 def listar_mis_pedidos(usuario):
-    """
-    El historial personal de cada rol:
-    - cliente: los pedidos que él mismo hizo.
-    - repartidor: los pedidos que él aceptó (en curso o ya entregados).
-    - admin: todos (para tener una vista equivalente).
-    """
     rol = _rol(usuario)
 
     if rol == "repartidor":
-        return Pedido.objects.filter(repartidor=usuario).order_by("-creado_en")
+        # AQUI LA SOLUCIÓN: Excluimos los entregados, para que solo vea los "En Curso"
+        return Pedido.objects.filter(repartidor=usuario).exclude(estado="entregado").order_by("-creado_en")
 
     if rol == "admin":
         return Pedido.objects.all().order_by("-creado_en")
 
     return Pedido.objects.filter(cliente=usuario).order_by("-creado_en")
-
 
 def listar_rechazados(usuario):
     """
@@ -167,3 +158,31 @@ def avanzar_estado_pedido(pedido_id: int, usuario):
 
 def obtener_pedido(pedido_id: int):
     return get_object_or_404(Pedido, id=pedido_id)
+
+def listar_entregados(usuario):
+    """
+    Solo para repartidores: historial de pedidos ya entregados.
+    """
+    if _rol(usuario) != "repartidor":
+        raise HttpError(403, "Solo un repartidor tiene historial de entregados")
+
+    return Pedido.objects.filter(repartidor=usuario, estado="entregado").order_by("-creado_en")
+
+
+def confirmar_entrega_cliente(pedido_id: int, usuario, calificacion: int):
+    """
+    El cliente confirma que recibió el pedido y le da una calificación al repartidor.
+    """
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    if pedido.cliente.id != usuario.id:
+        raise HttpError(403, "Solo el cliente que hizo el pedido puede confirmarlo")
+        
+    if pedido.estado != "entregado":
+        raise HttpError(400, "El pedido aún no ha sido marcado como entregado")
+
+    pedido.confirmado_cliente = True
+    pedido.calificacion_repartidor = calificacion
+    pedido.save(update_fields=["confirmado_cliente", "calificacion_repartidor"])
+    
+    return pedido
