@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import type { Pedido } from "../types";
+import type { Pedido, ItemPedido } from "../types";
 import { ApiError } from "../api/client";
 
 const ESTADO_CONFIG: Record<
@@ -20,6 +20,49 @@ interface Props {
   onTomar?: (id: number) => Promise<unknown>;
   onRechazar?: (id: number) => Promise<unknown>;
   mensajeVacio?: string;
+}
+
+function ResumenItems({ items }: { items: ItemPedido[] }) {
+  const [expandido, setExpandido] = useState(false);
+
+  if (!items || items.length === 0) return null;
+
+  const totalItems = items.reduce((acc, i) => acc + i.cantidad, 0);
+  const totalPrecio = items.reduce(
+    (acc, i) => acc + i.cantidad * Number(i.precio_unitario),
+    0,
+  );
+
+  return (
+    <div className="pedido-items-resumen">
+      <button
+        className="pedido-items-toggle"
+        onClick={() => setExpandido((v) => !v)}
+        type="button"
+      >
+        <span>
+          🛍️ {totalItems} producto{totalItems !== 1 ? "s" : ""}
+          {" · "}
+          <strong>${totalPrecio.toLocaleString("es-CL")}</strong>
+        </span>
+        <span className="pedido-items-chevron">{expandido ? "▲" : "▼"}</span>
+      </button>
+
+      {expandido && (
+        <ul className="pedido-items-lista">
+          {items.map((item) => (
+            <li key={item.id} className="pedido-item-row">
+              <span className="pedido-item-qty">{item.cantidad}×</span>
+              <span className="pedido-item-nombre">{item.nombre_producto}</span>
+              <span className="pedido-item-precio">
+                ${(item.cantidad * Number(item.precio_unitario)).toLocaleString("es-CL")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export default function ListaPedidos({
@@ -120,11 +163,12 @@ export default function ListaPedidos({
                   </span>
                 </div>
 
+                {/* ── Resumen de items ──────────────────────────────── */}
+                <ResumenItems items={p.items} />
+
                 {/* ── Detalles ──────────────────────────────────────── */}
                 <div className="pedido-card__meta">
-                  <span>
-                    👤 {p.cliente}
-                  </span>
+                  <span>👤 {p.cliente}</span>
                   <span>
                     {p.repartidor
                       ? `🛵 ${p.repartidor}`
@@ -134,7 +178,8 @@ export default function ListaPedidos({
                     {p.tipo_entrega === "retiro" ? "🏪 Retiro" : "🛵 Delivery"}
                   </span>
                   <span className="pedido-card__fecha">
-                    🕐 {new Date(p.creado_en).toLocaleString("es-CL", {
+                    🕐{" "}
+                    {new Date(p.creado_en).toLocaleString("es-CL", {
                       day: "2-digit",
                       month: "2-digit",
                       hour: "2-digit",

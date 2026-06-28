@@ -14,11 +14,10 @@ const ETAPAS: { clave: EstadoPedido; etiqueta: string; emoji: string }[] = [
   { clave: "entregado",  etiqueta: "Entregado",        emoji: "✅" },
 ];
 
-/** Texto del botón de avance según el estado actual del pedido. */
 const LABEL_AVANZAR: Record<EstadoPedido, string> = {
   pendiente:  "Iniciar preparación →",
   preparando: "Salir a entregar 🛵",
-  en_camino:  "Confirmar entrega ✓",
+  en_camino:  "",   // este paso usa el flujo de PIN
   entregado:  "",
 };
 
@@ -51,6 +50,113 @@ function StarRating({
   );
 }
 
+// ─── Subcomponente: PIN del cliente ───────────────────────────────────────────
+
+function PinEntrega({ pin }: { pin: string }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="pin-card">
+      <p className="pin-titulo">🔐 Tu PIN de entrega</p>
+      <p className="pin-descripcion">
+        Cuando el repartidor llegue, dile este código para confirmar que recibiste tu pedido.
+      </p>
+      <div className="pin-display">
+        {visible ? (
+          <span className="pin-digits">{pin}</span>
+        ) : (
+          <span className="pin-oculto">••••</span>
+        )}
+        <button
+          type="button"
+          className="pin-toggle"
+          onClick={() => setVisible((v) => !v)}
+        >
+          {visible ? "Ocultar" : "Mostrar"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Subcomponente: ingreso de PIN por el repartidor ─────────────────────────
+
+function FormularioPinRepartidor({
+  onConfirmar,
+  cargando,
+  error,
+}: {
+  onConfirmar: (pin: string) => void;
+  cargando: boolean;
+  error: string | null;
+}) {
+  const [pin, setPin] = useState("");
+
+  function handleSubmit() {
+    if (pin.length === 4) onConfirmar(pin);
+  }
+
+  return (
+    <div className="pin-card pin-card--repartidor">
+      <p className="pin-titulo">🔑 Confirmar entrega</p>
+      <p className="pin-descripcion">
+        Pídele al cliente su PIN de 4 dígitos e ingrésalo para marcar el pedido como entregado.
+      </p>
+      <div className="pin-input-row">
+        <input
+          className="pin-input"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={4}
+          placeholder="0000"
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        />
+        <button
+          className="btn"
+          disabled={pin.length !== 4 || cargando}
+          onClick={handleSubmit}
+        >
+          {cargando ? "Verificando..." : "Confirmar ✓"}
+        </button>
+      </div>
+      {error && <p className="form-error" style={{ marginTop: "0.6rem" }}>{error}</p>}
+    </div>
+  );
+}
+
+// ─── Subcomponente: resumen de items del pedido ────────────────────────────────
+
+function ItemsPedido({ pedido }: { pedido: PedidoType }) {
+  if (!pedido.items || pedido.items.length === 0) return null;
+
+  const total = pedido.items.reduce(
+    (acc, i) => acc + i.cantidad * Number(i.precio_unitario),
+    0,
+  );
+
+  return (
+    <div className="pedido-items-detalle">
+      <p className="pedido-items-titulo">🛍️ Contenido del pedido</p>
+      {pedido.items.map((item) => (
+        <div key={item.id} className="pedido-item-detalle-row">
+          <span className="pedido-item-qty-badge">{item.cantidad}×</span>
+          <span className="pedido-item-nombre-full">{item.nombre_producto}</span>
+          <span className="pedido-item-precio-full">
+            ${(item.cantidad * Number(item.precio_unitario)).toLocaleString("es-CL")}
+          </span>
+        </div>
+      ))}
+      <div className="pedido-items-total">
+        <span>Total productos</span>
+        <strong>${total.toLocaleString("es-CL")}</strong>
+      </div>
+    </div>
+  );
+}
+
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function Pedido() {
@@ -61,10 +167,13 @@ export default function Pedido() {
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
   const [cargandoAccion, setCargandoAccion] = useState(false);
+  const [errorPin, setErrorPin] = useState<string | null>(null);
+  const [cargandoPin, setCargandoPin] = useState(false);
 
-  // Estado para la confirmación del cliente
+  // Confirmación del cliente
   const [calificacion, setCalificacion] = useState(5);
   const [confirmando, setConfirmando] = useState(false);
+  const [errorConfirmar, setErrorConfirmar] = useState<string | null>(null);
 
   const cargar = useCallback(() => {
     if (!id) return;
@@ -115,15 +224,31 @@ export default function Pedido() {
     }
   }
 
-  async function handleConfirmar() {
+  async function handleEntregarConPin(pin: string) {
     if (!id) return;
-    setConfirmando(true);
-    setErrorAccion(null);
+    setCargandoPin(true);
+    setErrorPin(null);
     try {
-      const actualizado = await api.confirmarEntrega(Number(id), calificacion);
+      const actualizado = await api.entregarConPin(Number(id), pin);
       setPedido(actualizado);
     } catch (err) {
-      setErrorAccion(
+      setErrorPin(
+        err instanceof ApiError ? err.message : "No se pudo confirmar la entrega.",
+      );
+    } finally {
+      setCargandoPin(false);
+    }
+  }
+
+  async function handleConfirmarRecepcion() {
+    if (!id) return;
+    setConfirmando(true);
+    setErrorConfirmar(null);
+    try {
+      const actualizado = await api.confirmarRecepcion(Number(id), calificacion);
+      setPedido(actualizado);
+    } catch (err) {
+      setErrorConfirmar(
         err instanceof ApiError ? err.message : "No se pudo confirmar el pedido.",
       );
     } finally {
@@ -152,17 +277,34 @@ export default function Pedido() {
     );
   }
 
-  // ─── Permisos ──────────────────────────────────────────────────────────────
+  // ─── Lógica de permisos ────────────────────────────────────────────────────
 
   const indiceActual = ETAPAS.findIndex((e) => e.clave === pedido.estado);
-  const esEntregado = pedido.estado === "entregado";
+  const esEntregado  = pedido.estado === "entregado";
+  const esEnCamino   = pedido.estado === "en_camino";
 
+  const esRepartidorAsignado =
+    rol === "repartidor" && pedido.repartidor === usuario;
+
+  // "Avanzar" solo aplica para pendiente→preparando y preparando→en_camino
   const puedeAvanzar =
     !esEntregado &&
-    (rol === "admin" ||
-      (rol === "repartidor" && pedido.repartidor === usuario));
+    !esEnCamino &&
+    (rol === "admin" || esRepartidorAsignado);
 
-  const puedeTomar = rol === "repartidor" && pedido.repartidor === null && !esEntregado;
+  const puedeTomar =
+    rol === "repartidor" && pedido.repartidor === null && !esEntregado;
+
+  // El formulario de PIN aparece cuando el repartidor llega al último paso
+  const puedeIngresarPin =
+    esEnCamino && (rol === "admin" || esRepartidorAsignado);
+
+  // El cliente ve su PIN mientras el pedido no está entregado
+  const verPin =
+    rol === "cliente" &&
+    pedido.cliente === usuario &&
+    pedido.pin_entrega !== null &&
+    !esEntregado;
 
   const puedeConfirmar =
     rol === "cliente" && esEntregado && !pedido.confirmado_cliente;
@@ -189,7 +331,12 @@ export default function Pedido() {
           </div>
         </div>
 
-        {/* ── Dirección (si aplica) ─────────────────────────────────────── */}
+        {/* ── Contenido del pedido ─────────────────────────────────────── */}
+        <ItemsPedido pedido={pedido} />
+
+        <hr className="pedido-divider" />
+
+        {/* ── Info de entrega ───────────────────────────────────────────── */}
         {pedido.tipo_entrega === "delivery" && pedido.direccion_entrega && (
           <div className="pedido-info-row">
             <span className="pedido-info-label">📍 Dirección</span>
@@ -197,7 +344,6 @@ export default function Pedido() {
           </div>
         )}
 
-        {/* ── Repartidor ────────────────────────────────────────────────── */}
         <div className="pedido-info-row">
           <span className="pedido-info-label">🛵 Repartidor</span>
           <span>
@@ -207,7 +353,6 @@ export default function Pedido() {
           </span>
         </div>
 
-        {/* ── Pago al repartidor (visible para repartidor/admin) ─────────── */}
         {(rol === "repartidor" || rol === "admin") && pedido.pago_repartidor > 0 && (
           <div className="pedido-info-row">
             <span className="pedido-info-label">💰 Tu pago</span>
@@ -222,7 +367,7 @@ export default function Pedido() {
         {/* ── Tracker de estados ────────────────────────────────────────── */}
         <div className="estado-tracker">
           {ETAPAS.map((etapa, i) => {
-            const done = i < indiceActual;
+            const done    = i < indiceActual;
             const current = i === indiceActual;
             return (
               <div
@@ -245,9 +390,11 @@ export default function Pedido() {
 
         {/* ── Acciones ──────────────────────────────────────────────────── */}
 
-        {errorAccion && <p className="form-error" style={{ marginTop: "1rem" }}>{errorAccion}</p>}
+        {errorAccion && (
+          <p className="form-error" style={{ marginTop: "1rem" }}>{errorAccion}</p>
+        )}
 
-        {/* Tomar pedido (repartidor, sin asignar) */}
+        {/* Tomar pedido */}
         {puedeTomar && (
           <button
             className="btn btn-block accion-btn"
@@ -258,39 +405,55 @@ export default function Pedido() {
           </button>
         )}
 
-        {/* Avanzar estado (admin o repartidor asignado) */}
+        {/* Avanzar estado (excepto el último paso) */}
         {puedeAvanzar && (
           <button
             className="btn btn-block accion-btn"
             onClick={handleAvanzar}
             disabled={cargandoAccion}
           >
-            {cargandoAccion
-              ? "Actualizando..."
-              : LABEL_AVANZAR[pedido.estado]}
+            {cargandoAccion ? "Actualizando..." : LABEL_AVANZAR[pedido.estado]}
           </button>
         )}
 
-        {/* Confirmación del cliente: pedido entregado, sin confirmar aún */}
+        {/* ── PIN del cliente (visible solo para el cliente dueño) ──────── */}
+        {verPin && pedido.pin_entrega && (
+          <PinEntrega pin={pedido.pin_entrega} />
+        )}
+
+        {/* ── Formulario de PIN para el repartidor ─────────────────────── */}
+        {puedeIngresarPin && (
+          <FormularioPinRepartidor
+            onConfirmar={handleEntregarConPin}
+            cargando={cargandoPin}
+            error={errorPin}
+          />
+        )}
+
+        {/* ── Confirmación del cliente ──────────────────────────────────── */}
         {puedeConfirmar && (
           <div className="confirmacion-card">
-            <p className="confirmacion-titulo">¿Recibiste tu pedido?</p>
+            <p className="confirmacion-titulo">¿Recibiste tu pedido? 🎉</p>
             <p className="confirmacion-sub">
-              Califica a tu repartidor{pedido.repartidor ? ` ${pedido.repartidor}` : ""}
+              Califica a tu repartidor
+              {pedido.repartidor ? ` ${pedido.repartidor}` : ""}
             </p>
             <StarRating value={calificacion} onChange={setCalificacion} />
+            {errorConfirmar && (
+              <p className="form-error" style={{ marginTop: "0.6rem" }}>{errorConfirmar}</p>
+            )}
             <button
               className="btn btn-block"
               style={{ marginTop: "0.9rem" }}
-              onClick={handleConfirmar}
+              onClick={handleConfirmarRecepcion}
               disabled={confirmando}
             >
-              {confirmando ? "Confirmando..." : "Confirmar recepción ✓"}
+              {confirmando ? "Confirmando..." : "Sí, lo recibí ✓"}
             </button>
           </div>
         )}
 
-        {/* Pedido ya confirmado por el cliente */}
+        {/* ── Pedido ya confirmado ──────────────────────────────────────── */}
         {yaConfirmo && pedido.calificacion_repartidor !== null && (
           <div className="confirmacion-card confirmacion-card--ok">
             <p className="confirmacion-titulo">¡Gracias por confirmar!</p>

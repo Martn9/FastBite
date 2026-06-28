@@ -31,9 +31,6 @@ async function parseOrThrow(res: Response) {
   return data;
 }
 
-// IMPORTANTE: registro y login en el backend (django-ninja) reciben los
-// parámetros como QUERY STRING, no como JSON body, porque las funciones
-// de usuarios/api.py no usan un Schema de Pydantic para esos endpoints.
 function withQuery(path: string, params: Record<string, string>) {
   const qs = new URLSearchParams(params).toString();
   return `${BASE_URL}${path}?${qs}`;
@@ -126,8 +123,8 @@ export async function listarMisPedidos(): Promise<Pedido[]> {
   return parseOrThrow(res);
 }
 
-/** El cliente confirma la recepción del pedido y califica al repartidor (1–5). */
-export async function confirmarEntrega(
+/** El cliente confirma la recepción y califica al repartidor (1–5). */
+export async function confirmarRecepcion(
   id: number,
   calificacion: number,
 ): Promise<Pedido> {
@@ -182,6 +179,16 @@ export async function avanzarPedido(id: number): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/avanzar`, {
     method: "POST",
     headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
+/** El repartidor ingresa el PIN del cliente para confirmar la entrega física. */
+export async function entregarConPin(id: number, pin: string): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/entregar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ pin }),
   });
   return parseOrThrow(res);
 }

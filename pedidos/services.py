@@ -7,10 +7,11 @@ from django.shortcuts import get_object_or_404
 def crear_pedido(
     cliente, items: list, tipo_entrega: str = "delivery", direccion_entrega: str = None
 ):
+    from .models import _generar_pin
+
     primer_producto = get_object_or_404(Producto, id=items[0]["producto_id"])
     restaurante = primer_producto.restaurante
 
-    # Calculamos un pago al repartidor ficticio (ej. 1500 si es delivery, 0 si es retiro)
     pago = 1500 if tipo_entrega == "delivery" else 0
 
     pedido = Pedido.objects.create(
@@ -19,6 +20,7 @@ def crear_pedido(
         tipo_entrega=tipo_entrega,
         direccion_entrega=direccion_entrega,
         pago_repartidor=pago,
+        pin_entrega=_generar_pin(),   # ← PIN generado al crear el pedido
     )
 
     for item in items:
@@ -76,6 +78,7 @@ def listar_disponibles(usuario):
     return (
         Pedido.objects.filter(repartidor__isnull=True)
         .exclude(rechazado_por=usuario)
+        .prefetch_related("items__producto")
         .order_by("-creado_en")
     )
 
@@ -84,34 +87,44 @@ def listar_mis_pedidos(usuario):
     rol = _rol(usuario)
 
     if rol == "repartidor":
-        # AQUI LA SOLUCIÓN: Excluimos los entregados, para que solo vea los "En Curso"
         return (
             Pedido.objects.filter(repartidor=usuario)
             .exclude(estado="entregado")
+            .prefetch_related("items__producto")
             .order_by("-creado_en")
         )
 
     if rol == "admin":
-        return Pedido.objects.all().order_by("-creado_en")
+        return (
+            Pedido.objects.all()
+            .prefetch_related("items__producto")
+            .order_by("-creado_en")
+        )
 
-    return Pedido.objects.filter(cliente=usuario).order_by("-creado_en")
+    return (
+        Pedido.objects.filter(cliente=usuario)
+        .prefetch_related("items__producto")
+        .order_by("-creado_en")
+    )
 
 
 def listar_rechazados(usuario):
     """
-    Solo para repartidores: historial de pedidos que este repartidor
-    rechazó en algún momento.
+    Solo para repartidores: historial de pedidos que este repartidor rechazó.
     """
     if _rol(usuario) != "repartidor":
         raise HttpError(403, "Solo un repartidor tiene pedidos rechazados")
 
-    return usuario.pedidos_rechazados.all().order_by("-creado_en")
+    return (
+        usuario.pedidos_rechazados.all()
+        .prefetch_related("items__producto")
+        .order_by("-creado_en")
+    )
 
 
 def rechazar_pedido(pedido_id: int, usuario):
     """
-    Un repartidor rechaza un pedido disponible. Queda registrado para que
-    no se le vuelva a ofrecer a él, pero sigue disponible para los demás.
+    Un repartidor rechaza un pedido disponible.
     """
     if _rol(usuario) != "repartidor":
         raise HttpError(403, "Solo un repartidor puede rechazar un pedido")
@@ -127,8 +140,7 @@ def rechazar_pedido(pedido_id: int, usuario):
 
 def tomar_pedido(pedido_id: int, usuario):
     """
-    Un repartidor toma un pedido disponible. Una vez tomado, queda
-    asignado exclusivamente a él hasta que se entregue.
+    Un repartidor toma un pedido disponible.
     """
     if _rol(usuario) != "repartidor":
         raise HttpError(403, "Solo un repartidor puede tomar un pedido")
@@ -146,8 +158,10 @@ def tomar_pedido(pedido_id: int, usuario):
 def avanzar_estado_pedido(pedido_id: int, usuario):
     """
     Usa el patrón State para avanzar al siguiente estado del pedido.
+    El estado "entregado" ahora se alcanza SOLO con el endpoint de PIN,
+    así que aquí bloqueamos el avance desde "en_camino".
     Permisos:
-    - admin: puede avanzar cualquier pedido.
+    - admin: puede avanzar cualquier pedido (excepto el paso final).
     - repartidor: solo puede avanzar el pedido que él mismo tomó.
     - cliente: nunca puede avanzar un pedido.
     """
@@ -161,27 +175,45 @@ def avanzar_estado_pedido(pedido_id: int, usuario):
     else:
         raise HttpError(403, "No tienes permiso para avanzar este pedido")
 
+    # El último paso (en_camino → entregado) requiere el PIN del cliente
+    if pedido.estado == "en_camino":
+        raise HttpError(
+            400,
+            "Para marcar como entregado debes ingresar el PIN del cliente.",
+        )
+
     pedido.avanzar_estado()
     return pedido
 
 
-def obtener_pedido(pedido_id: int):
-    return get_object_or_404(Pedido, id=pedido_id)
-
-
-def listar_entregados(usuario):
+def confirmar_entrega_con_pin(pedido_id: int, usuario, pin: str):
     """
-    Solo para repartidores: historial de pedidos ya entregados.
+    El repartidor ingresa el PIN del cliente para confirmar la entrega.
+    Transiciona el pedido de 'en_camino' a 'entregado'.
     """
-    if _rol(usuario) != "repartidor":
-        raise HttpError(403, "Solo un repartidor tiene historial de entregados")
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    rol = _rol(usuario)
 
-    return Pedido.objects.filter(repartidor=usuario, estado="entregado").order_by(
-        "-creado_en"
-    )
+    if rol not in ("repartidor", "admin"):
+        raise HttpError(403, "Solo el repartidor o admin puede confirmar la entrega")
+
+    if rol == "repartidor" and pedido.repartidor_id != usuario.id:
+        raise HttpError(403, "Solo el repartidor asignado puede confirmar la entrega")
+
+    if pedido.estado != "en_camino":
+        raise HttpError(
+            400, f"El pedido está en estado '{pedido.estado}', no en camino."
+        )
+
+    if pedido.pin_entrega != pin.strip():
+        raise HttpError(400, "PIN incorrecto. Pídeselo al cliente.")
+
+    pedido.estado = "entregado"
+    pedido.save(update_fields=["estado"])
+    return pedido
 
 
-def confirmar_entrega_cliente(pedido_id: int, usuario, calificacion: int):
+def confirmar_recepcion_cliente(pedido_id: int, usuario, calificacion: int):
     """
     El cliente confirma que recibió el pedido y le da una calificación al repartidor.
     """
@@ -193,8 +225,34 @@ def confirmar_entrega_cliente(pedido_id: int, usuario, calificacion: int):
     if pedido.estado != "entregado":
         raise HttpError(400, "El pedido aún no ha sido marcado como entregado")
 
+    if pedido.confirmado_cliente:
+        raise HttpError(400, "El pedido ya fue confirmado")
+
+    if not 1 <= calificacion <= 5:
+        raise HttpError(400, "La calificación debe ser entre 1 y 5")
+
     pedido.confirmado_cliente = True
     pedido.calificacion_repartidor = calificacion
     pedido.save(update_fields=["confirmado_cliente", "calificacion_repartidor"])
 
     return pedido
+
+
+def obtener_pedido(pedido_id: int):
+    return get_object_or_404(
+        Pedido.objects.prefetch_related("items__producto"), id=pedido_id
+    )
+
+
+def listar_entregados(usuario):
+    """
+    Solo para repartidores: historial de pedidos ya entregados.
+    """
+    if _rol(usuario) != "repartidor":
+        raise HttpError(403, "Solo un repartidor tiene historial de entregados")
+
+    return (
+        Pedido.objects.filter(repartidor=usuario, estado="entregado")
+        .prefetch_related("items__producto")
+        .order_by("-creado_en")
+    )

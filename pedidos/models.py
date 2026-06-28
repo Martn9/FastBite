@@ -1,6 +1,12 @@
+import random
 from django.db import models
 from catalogo.models import Producto, Restaurante
 from django.contrib.auth.models import User
+
+
+def _generar_pin():
+    """Genera un PIN numérico de 4 dígitos como string con ceros a la izquierda."""
+    return f"{random.randint(0, 9999):04d}"
 
 
 class Pedido(models.Model):
@@ -35,7 +41,7 @@ class Pedido(models.Model):
 
     estado = models.CharField(max_length=20, choices=ESTADOS, default="pendiente")
 
-    # --- Campos agregados para control de entrega, pago y calificación ---
+    # --- Campos de entrega, pago y calificación ---
     tipo_entrega = models.CharField(
         max_length=20, choices=TIPO_ENTREGA_CHOICES, default="delivery"
     )
@@ -44,14 +50,22 @@ class Pedido(models.Model):
 
     confirmado_cliente = models.BooleanField(default=False)
     calificacion_repartidor = models.PositiveSmallIntegerField(null=True, blank=True)
-    # --------------------------------------------------------------------
+
+    # PIN de 4 dígitos que se genera al crear el pedido.
+    # El cliente lo recibe en la vista de detalle y solo lo comparte al repartidor
+    # cuando tiene el pedido en mano. El repartidor debe ingresarlo para marcar
+    # el pedido como "entregado".
+    pin_entrega = models.CharField(
+        max_length=4,
+        blank=True,
+        default="",
+        help_text="PIN de 4 dígitos para verificar la entrega presencial.",
+    )
 
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
     # Cada vez que un repartidor rechaza este pedido, queda registrado aquí.
-    # Así no se le vuelve a mostrar como "disponible" a ese mismo repartidor,
-    # y se puede armar su historial de pedidos rechazados.
     rechazado_por = models.ManyToManyField(
         User, related_name="pedidos_rechazados", blank=True
     )

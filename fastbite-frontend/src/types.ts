@@ -2,8 +2,6 @@
 // pedidos/schemas.py y las respuestas de usuarios/api.py.
 // Si alguien cambia un schema en el backend, hay que actualizar esto también.
 
-// OJO: el backend (usuarios/api.py / PerfilUsuario.ROLES) devuelve
-// exactamente estos tres strings. "admin", no "administrador".
 export type Rol = "cliente" | "admin" | "repartidor";
 
 export interface Restaurante {
@@ -33,6 +31,15 @@ export type EstadoPedido =
   | "en_camino"
   | "entregado";
 
+export interface ItemPedido {
+  id: number;
+  producto: number;
+  cantidad: number;
+  precio_unitario: number;
+  nombre_producto: string;
+  imagen_url: string;
+}
+
 export interface Pedido {
   id: number;
   cliente: string;
@@ -40,13 +47,16 @@ export interface Pedido {
   restaurante: string;
   estado: EstadoPedido;
   creado_en: string;
-  // Campos de entrega y pago
+  items: ItemPedido[];
+  // Entrega y pago
   tipo_entrega: string;
   direccion_entrega: string | null;
   pago_repartidor: number;
   // Confirmación y calificación del cliente
   confirmado_cliente: boolean;
   calificacion_repartidor: number | null;
+  // PIN solo visible para el cliente dueño del pedido
+  pin_entrega: string | null;
 }
 
 export interface ItemCarrito {

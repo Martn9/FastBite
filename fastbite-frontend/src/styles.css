@@ -850,3 +850,250 @@ button {
 .badge-preparando { background: #ddf0ff; color: #1a5a8a; }
 .badge-en-camino  { background: #fff0eb; color: var(--ember-dark); }
 .badge-entregado  { background: #edf7ed; color: #1a5a1a; }
+
+/* ====================================================================
+   ESTILOS NUEVOS – pegar al final de fastbite-frontend/src/styles.css
+   ==================================================================== */
+
+/* ─── Items del pedido (detalle) ────────────────────────────────────── */
+
+.pedido-items-detalle {
+  background: var(--cream);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.pedido-items-titulo {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--olive);
+  margin: 0 0 0.6rem;
+}
+
+.pedido-item-detalle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 0.9rem;
+}
+
+.pedido-item-detalle-row:last-of-type {
+  border-bottom: none;
+}
+
+.pedido-item-qty-badge {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: var(--charcoal);
+  color: var(--cream);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  flex-shrink: 0;
+}
+
+.pedido-item-nombre-full {
+  flex: 1;
+  font-weight: 500;
+}
+
+.pedido-item-precio-full {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ember-dark);
+}
+
+.pedido-items-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 2px solid var(--charcoal);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* ─── Items del pedido (lista expandible en ListaPedidos) ───────────── */
+
+.pedido-items-resumen {
+  margin: 0.4rem 0 0.6rem;
+  border: 1.5px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.pedido-items-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  background: var(--cream);
+  border: none;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  color: var(--charcoal);
+}
+
+.pedido-items-toggle:hover {
+  background: #ede8de;
+}
+
+.pedido-items-chevron {
+  font-size: 0.65rem;
+  color: var(--olive);
+  margin-left: 0.5rem;
+}
+
+.pedido-items-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.pedido-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.87rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pedido-item-row:last-child {
+  border-bottom: none;
+}
+
+.pedido-item-qty {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ember);
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 1.8rem;
+}
+
+.pedido-item-nombre {
+  flex: 1;
+}
+
+.pedido-item-precio {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* ─── PIN del cliente ───────────────────────────────────────────────── */
+
+.pin-card {
+  margin-top: 1.25rem;
+  background: #f0f6ff;
+  border: 2px solid #7ab3e0;
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  text-align: center;
+}
+
+.pin-card--repartidor {
+  background: #fff8f0;
+  border-color: var(--ember);
+}
+
+.pin-titulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  margin: 0 0 0.25rem;
+}
+
+.pin-descripcion {
+  font-size: 0.85rem;
+  color: #5a5650;
+  margin: 0 0 0.9rem;
+  line-height: 1.45;
+}
+
+.pin-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.pin-digits {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--charcoal);
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 8px;
+  padding: 0.3rem 0.9rem;
+}
+
+.pin-oculto {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #b4ab9a;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 0.3rem 0.9rem;
+}
+
+.pin-toggle {
+  background: none;
+  border: 1.5px solid #7ab3e0;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  padding: 0.35rem 0.7rem;
+  color: #1a5a8a;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.pin-toggle:hover {
+  background: #dbeaf8;
+}
+
+/* ─── Formulario de PIN del repartidor ──────────────────────────────── */
+
+.pin-input-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pin-input {
+  font-family: var(--font-mono);
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-align: center;
+  width: 7rem;
+  padding: 0.35rem 0.5rem;
+  border: 2px solid var(--charcoal);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--charcoal);
+}
+
+.pin-input:focus {
+  outline: none;
+  border-color: var(--ember);
+  box-shadow: 0 0 0 3px rgba(214, 80, 44, 0.15);
+}
