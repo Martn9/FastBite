@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Restaurante(models.Model):
@@ -9,6 +10,14 @@ class Restaurante(models.Model):
     tiempo_entrega = models.CharField(max_length=50)
     # Para el MVP, usaremos una URL de imagen simple
     imagen_url = models.URLField(blank=True)
+    # Asociar opcionalmente un usuario interno que represente la cuenta del restaurante
+    user = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="restaurante_profile",
+    )
 
     def __str__(self):
         return self.nombre

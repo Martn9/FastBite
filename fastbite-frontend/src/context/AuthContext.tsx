@@ -6,13 +6,13 @@ import {
   type ReactNode,
 } from "react";
 import * as api from "../api/client";
-import type { Rol } from "../types";
+import type { Rol, LoginResponse } from "../types";
 
 interface AuthState {
   usuario: string | null;
   rol: Rol | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<LoginResponse>;
   logout: () => void;
 }
 
@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("fastbite_rol", data.rol);
     setUsuario(data.usuario);
     setRol(data.rol);
+    return data;
   }, []);
 
   const logout = useCallback(() => {

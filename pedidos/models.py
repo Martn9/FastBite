@@ -9,12 +9,26 @@ def _generar_pin():
     return f"{random.randint(0, 9999):04d}"
 
 
+class CuponDescuento(models.Model):
+    codigo = models.CharField(max_length=20, unique=True)
+    porcentaje = models.PositiveIntegerField(help_text="Descuento en porcentaje (ej: 20 para 20%)")
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.codigo} ({self.porcentaje}%)"
+
+
 class Pedido(models.Model):
     ESTADOS = [
         ("pendiente", "Pendiente"),
         ("preparando", "Preparando"),
         ("en_camino", "En Camino"),
+        ("listo_despacho", "Listo para despacho"),
+        # Flujo alternativo para pedidos de retiro en tienda
+        ("listo_retiro", "Listo para retirar"),
+        ("retirado", "Retirado"),
         ("entregado", "Entregado"),
+        ("cancelado", "Cancelado"),
     ]
 
     TIPO_ENTREGA_CHOICES = [
@@ -48,8 +62,24 @@ class Pedido(models.Model):
     direccion_entrega = models.CharField(max_length=255, null=True, blank=True)
     pago_repartidor = models.IntegerField(default=0)
 
+    # Campos de totales y descuento
+    cupon = models.ForeignKey(CuponDescuento, on_delete=models.SET_NULL, null=True, blank=True)
+    descuento_aplicado = models.IntegerField(default=0)
+    total_final = models.IntegerField(default=0)
+
     confirmado_cliente = models.BooleanField(default=False)
     calificacion_repartidor = models.PositiveSmallIntegerField(null=True, blank=True)
+    calificacion_restaurante = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    cancelado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_cancelados",
+    )
+    cancelado_en = models.DateTimeField(null=True, blank=True)
+    cancelado_razon = models.CharField(max_length=255, blank=True, default="")
 
     # PIN de 4 dígitos que se genera al crear el pedido.
     # El cliente lo recibe en la vista de detalle y solo lo comparte al repartidor

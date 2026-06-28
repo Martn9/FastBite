@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import type { Pedido, ItemPedido } from "../types";
 import { ApiError } from "../api/client";
 
@@ -7,10 +8,13 @@ const ESTADO_CONFIG: Record<
   string,
   { label: string; emoji: string; clase: string }
 > = {
-  pendiente:  { label: "Pendiente",   emoji: "🧾", clase: "badge-pendiente" },
-  preparando: { label: "Preparando",  emoji: "👨‍🍳", clase: "badge-preparando" },
-  en_camino:  { label: "En camino",   emoji: "🛵", clase: "badge-en-camino" },
-  entregado:  { label: "Entregado",   emoji: "✅", clase: "badge-entregado" },
+  pendiente:      { label: "Pendiente",           emoji: "🧾", clase: "badge-pendiente" },
+  preparando:     { label: "Preparando",          emoji: "👨‍🍳", clase: "badge-preparando" },
+  listo_despacho: { label: "Listo para despacho", emoji: "📦", clase: "badge-preparando" },
+  listo_retiro:   { label: "Listo para retirar",  emoji: "📦", clase: "badge-preparando" },
+  retirado:       { label: "Retirado",            emoji: "🏁", clase: "badge-entregado" },
+  en_camino:      { label: "En camino",           emoji: "🛵", clase: "badge-en-camino" },
+  entregado:      { label: "Entregado",           emoji: "✅", clase: "badge-entregado" },
 };
 
 interface Props {
@@ -19,6 +23,8 @@ interface Props {
   cargarPedidos: () => Promise<Pedido[]>;
   onTomar?: (id: number) => Promise<unknown>;
   onRechazar?: (id: number) => Promise<unknown>;
+  onRenunciar?: (id: number) => Promise<unknown>;
+  onAvanzar?: (id: number) => Promise<unknown>;
   mensajeVacio?: string;
 }
 
@@ -71,8 +77,13 @@ export default function ListaPedidos({
   cargarPedidos,
   onTomar,
   onRechazar,
+  onRenunciar,
+  onAvanzar,
   mensajeVacio = "No hay pedidos por aquí todavía.",
 }: Props) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { usuario } = useAuth();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,10 +106,30 @@ export default function ListaPedidos({
     setAccionEnCurso(id);
     try {
       await onTomar(id);
-      recargar();
+      // Si estamos en la lista de disponibles, dirigimos al repartidor a 'en curso'
+      if (location.pathname === "/pedidos") {
+        navigate("/pedidos/en-curso");
+      } else {
+        recargar();
+      }
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "No se pudo tomar el pedido.",
+      );
+    } finally {
+      setAccionEnCurso(null);
+    }
+  }
+
+  async function manejarAvanzar(id: number) {
+    if (!onAvanzar) return;
+    setAccionEnCurso(id);
+    try {
+      await onAvanzar(id);
+      recargar();
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "No se pudo avanzar el pedido.",
       );
     } finally {
       setAccionEnCurso(null);
@@ -116,6 +147,23 @@ export default function ListaPedidos({
         err instanceof ApiError
           ? err.message
           : "No se pudo rechazar el pedido.",
+      );
+    } finally {
+      setAccionEnCurso(null);
+    }
+  }
+
+  async function manejarRenunciar(id: number) {
+    if (!onRenunciar) return;
+    setAccionEnCurso(id);
+    try {
+      await onRenunciar(id);
+      recargar();
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "No se pudo renunciar al pedido.",
       );
     } finally {
       setAccionEnCurso(null);
@@ -168,15 +216,21 @@ export default function ListaPedidos({
 
                 {/* ── Detalles ──────────────────────────────────────── */}
                 <div className="pedido-card__meta">
-                  <span>👤 {p.cliente}</span>
                   <span>
-                    {p.repartidor
-                      ? `🛵 ${p.repartidor}`
-                      : "🛵 Sin asignar"}
+                    👤 {p.cliente}
+                    {p.cliente === usuario && (
+                      <span className="pedido-badge pedido-badge--tu">Tu pedido</span>
+                    )}
                   </span>
+                    {p.repartidor && (
+                    <span>🛵 {p.repartidor}</span>
+                  )}
                   <span>
                     {p.tipo_entrega === "retiro" ? "🏪 Retiro" : "🛵 Delivery"}
                   </span>
+                  {p.tipo_entrega === "retiro" && p.restaurante_tiempo_entrega && (
+                    <span>⏱️ {p.restaurante_tiempo_entrega}</span>
+                  )}
                   <span className="pedido-card__fecha">
                     🕐{" "}
                     {new Date(p.creado_en).toLocaleString("es-CL", {
@@ -190,6 +244,15 @@ export default function ListaPedidos({
 
                 {/* ── Acciones ──────────────────────────────────────── */}
                 <div className="pedido-card__actions">
+                  {onAvanzar && (p.estado === "pendiente" || p.estado === "preparando") && (
+                    <button
+                      className="btn"
+                      disabled={ocupado(p.id)}
+                      onClick={() => manejarAvanzar(p.id)}
+                    >
+                      {ocupado(p.id) ? "..." : "Avanzar pedido"}
+                    </button>
+                  )}
                   {onTomar && (
                     <button
                       className="btn"
@@ -197,6 +260,15 @@ export default function ListaPedidos({
                       onClick={() => manejarTomar(p.id)}
                     >
                       {ocupado(p.id) ? "..." : "🙋 Tomar"}
+                    </button>
+                  )}
+                  {onRenunciar && (
+                    <button
+                      className="btn-ghost"
+                      disabled={ocupado(p.id)}
+                      onClick={() => manejarRenunciar(p.id)}
+                    >
+                      {ocupado(p.id) ? "..." : "✗ Renunciar"}
                     </button>
                   )}
                   {onRechazar && (

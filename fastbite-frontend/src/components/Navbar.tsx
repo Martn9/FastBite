@@ -20,21 +20,28 @@ export default function Navbar() {
         FastBite
       </Link>
       <nav>
+        {rol === "restaurante" ? (
+        <Link to="/restaurante">Mi panel</Link>
+      ) : (
         <Link to="/">Restaurantes</Link>
-        {rol === "repartidor" && (
-          <>
-            <Link to="/pedidos">Disponibles</Link>
-            <Link to="/rechazados">Rechazados</Link>
-          </>
-        )}
-        {isAuthenticated && rol !== null && (
-          <Link to="/mis-pedidos">
-            {rol === "admin" ? "Todos los pedidos" : "Mis pedidos"}
-          </Link>
-        )}
-        <Link to="/carrito" className="cart-pill">
+      )}
+      {rol === "repartidor" && (
+        <>
+          <Link to="/pedidos">Disponibles</Link>
+          <Link to="/pedidos/en-curso">En curso</Link>
+          <Link to="/rechazados">Rechazados</Link>
+        </>
+      )}
+      {rol === "cliente" && (
+        <Link to="/carrito" className="cart-pill" style={{ animation: "popBounce 0.3s ease" }}>
           Carrito · {cantidadTotal}
         </Link>
+      )}
+      {isAuthenticated && rol !== null && rol !== "restaurante" && (
+        <Link to="/mis-pedidos">
+          {rol === "admin" ? "Todos los pedidos" : "Mis pedidos"}
+        </Link>
+      )}
         {isAuthenticated ? (
           <>
             <span className="role-tag">

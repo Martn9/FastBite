@@ -100,11 +100,23 @@ export async function listarProductos(
 
 export async function crearPedido(
   items: { producto_id: number; cantidad: number }[],
+  tipo_entrega: string = "delivery",
+  direccion_entrega?: string,
+  codigo_cupon?: string
 ): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ items, tipo_entrega, direccion_entrega, codigo_cupon }),
+  });
+  return parseOrThrow(res);
+}
+
+export async function validarCupon(codigo: string): Promise<{ valido: boolean; porcentaje: number; mensaje: string }> {
+  const res = await fetch(`${BASE_URL}/pedidos/cupones/validar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ codigo }),
   });
   return parseOrThrow(res);
 }
@@ -145,6 +157,13 @@ export async function listarDisponibles(): Promise<Pedido[]> {
   return parseOrThrow(res);
 }
 
+export async function listarEnCurso(): Promise<Pedido[]> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/en-curso`, {
+    headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
 export async function listarRechazados(): Promise<Pedido[]> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/rechazados`, {
     headers: authHeader(),
@@ -175,10 +194,54 @@ export async function rechazarPedido(id: number): Promise<Pedido> {
   return parseOrThrow(res);
 }
 
+export async function renunciarPedido(id: number): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/renunciar`, {
+    method: "POST",
+    headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
 export async function avanzarPedido(id: number): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/avanzar`, {
     method: "POST",
     headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
+export async function confirmarRetiro(id: number): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/retirar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({}),
+  });
+  return parseOrThrow(res);
+}
+
+export async function confirmarRetiroConPin(id: number, pin?: string): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/retirar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ pin }),
+  });
+  return parseOrThrow(res);
+}
+
+export async function cancelarPedido(id: number, razon?: string): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/cancelar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ razon }),
+  });
+  return parseOrThrow(res);
+}
+
+export async function calificarRestaurante(id: number, calificacion: number): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/calificar-restaurante`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ calificacion }),
   });
   return parseOrThrow(res);
 }

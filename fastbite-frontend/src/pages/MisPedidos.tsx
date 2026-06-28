@@ -6,9 +6,7 @@ export default function MisPedidos() {
   const { rol } = useAuth();
 
   const subtitulo =
-    rol === "repartidor"
-      ? "Los pedidos que has aceptado, en curso o entregados"
-      : rol === "admin"
+    rol === "admin"
       ? "Vista general de todos los pedidos"
       : "El historial de todo lo que has pedido";
 

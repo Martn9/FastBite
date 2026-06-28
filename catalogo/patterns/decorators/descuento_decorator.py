@@ -1,5 +1,8 @@
+from decimal import Decimal
+
+
 class PedidoBase:
-    def __init__(self, subtotal, costo_envio=2000):
+    def __init__(self, subtotal, costo_envio=Decimal("2000")):
         self.subtotal = subtotal
         self.costo_envio = costo_envio
 
@@ -28,7 +31,8 @@ class DescuentoPorcentajeDecorator(PedidoDecorator):
 
     def calcular_total(self):
         total = self.pedido.calcular_total()
-        descuento = total * (self.porcentaje / 100)
+        # Evitar mezclar Decimal con float: usar Decimal para el porcentaje
+        descuento = (total * Decimal(self.porcentaje)) / Decimal("100")
         return total - descuento
 
     def descripcion(self):
@@ -50,7 +54,7 @@ class DescuentoFijoDecorator(PedidoDecorator):
 
 class EnvioGratisDecorator(PedidoDecorator):
     def calcular_total(self):
-        return self.pedido.calcular_total() - 2000
+        return self.pedido.calcular_total() - Decimal("2000")
 
     def descripcion(self):
         return self.pedido.descripcion() + " + envío gratis"

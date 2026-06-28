@@ -34,6 +34,11 @@ class PedidoSchema(Schema):
     tipo_entrega: str
     direccion_entrega: Optional[str] = None
     pago_repartidor: int
+    restaurante_tiempo_entrega: Optional[str] = None
+
+    # Totales y descuentos
+    descuento_aplicado: int
+    total_final: int
 
     # Confirmación y calificación del cliente
     confirmado_cliente: bool
@@ -56,8 +61,20 @@ class PedidoSchema(Schema):
         return obj.restaurante.nombre
 
     @staticmethod
+    def resolve_restaurante_tiempo_entrega(obj):
+        return obj.restaurante.tiempo_entrega
+
+    @staticmethod
     def resolve_items(obj):
         return list(obj.items.select_related("producto").all())
+
+    @staticmethod
+    def resolve_cancelado_por(obj):
+        return obj.cancelado_por.username if obj.cancelado_por else None
+
+    @staticmethod
+    def resolve_cancelado_razon(obj):
+        return obj.cancelado_razon or None
 
 
 class CrearItemSchema(Schema):
@@ -69,6 +86,7 @@ class CrearPedidoSchema(Schema):
     items: List[CrearItemSchema]
     tipo_entrega: str = "delivery"
     direccion_entrega: Optional[str] = None
+    codigo_cupon: Optional[str] = None
 
 
 class ConfirmarEntregaRepartidorSchema(Schema):
@@ -77,7 +95,25 @@ class ConfirmarEntregaRepartidorSchema(Schema):
     pin: str
 
 
+class ConfirmarRetiroSchema(Schema):
+    """El restaurante ingresa el PIN para confirmar la entrega de retiro."""
+
+    pin: Optional[str] = None
+
+
+class CancelarPedidoSchema(Schema):
+    """El cliente o restaurante cancela un pedido."""
+
+    razon: Optional[str] = None
+
+
 class CalificarPedidoSchema(Schema):
     """El cliente califica al repartidor tras confirmar la recepción."""
+
+    calificacion: int
+
+
+class CalificarRestauranteSchema(Schema):
+    """El cliente califica al restaurante después de retirar o recibir el pedido."""
 
     calificacion: int

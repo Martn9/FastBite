@@ -2,7 +2,7 @@
 // pedidos/schemas.py y las respuestas de usuarios/api.py.
 // Si alguien cambia un schema en el backend, hay que actualizar esto también.
 
-export type Rol = "cliente" | "admin" | "repartidor";
+export type Rol = "cliente" | "admin" | "repartidor" | "restaurante";
 
 export interface Restaurante {
   id: number;
@@ -28,6 +28,9 @@ export interface Producto {
 export type EstadoPedido =
   | "pendiente"
   | "preparando"
+  | "listo_despacho"
+  | "listo_retiro"
+  | "retirado"
   | "en_camino"
   | "entregado";
 
@@ -52,9 +55,17 @@ export interface Pedido {
   tipo_entrega: string;
   direccion_entrega: string | null;
   pago_repartidor: number;
+  restaurante_tiempo_entrega?: string | null;
+  // Totales y descuentos
+  descuento_aplicado: number;
+  total_final: number;
   // Confirmación y calificación del cliente
   confirmado_cliente: boolean;
   calificacion_repartidor: number | null;
+  calificacion_restaurante: number | null;
+  // Cancelación
+  cancelado_por: string | null;
+  cancelado_razon: string | null;
   // PIN solo visible para el cliente dueño del pedido
   pin_entrega: string | null;
 }

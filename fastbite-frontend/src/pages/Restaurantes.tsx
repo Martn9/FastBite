@@ -37,20 +37,20 @@ export default function Restaurantes() {
       <p className="page-subtitle">Elige tu restaurante y haz tu pedido</p>
       
       {usuario && (
-  <div className={`dashboard-banner ${rol ?? ""}`}>
-    <span style={{ fontSize: "1.4rem" }}>
-      {rol === "repartidor" ? "🛵" : rol === "admin" ? "⚙️" : "👋"}
-    </span>
-    <div>
-      <strong>Hola, {usuario}</strong>
-      <div style={{ fontSize: "0.85rem", fontWeight: 400 }}>
-        {rol === "cliente" && "¿Qué se te antoja hoy?"}
-        {rol === "repartidor" && "Revisa los pedidos disponibles para entregar."}
-        {rol === "admin" && "Panel de administración activo."}
-      </div>
-    </div>
-  </div>
-)}
+        <div className={`dashboard-banner ${rol ?? ""}`}>
+          <span className="banner-emoji">
+            {rol === "repartidor" ? "🛵" : rol === "admin" ? "⚙️" : "👋"}
+          </span>
+          <div className="banner-content">
+            <strong className="banner-title">Hola, {usuario}</strong>
+            <div className="banner-subtitle">
+              {rol === "cliente" && "¿Qué se te antoja hoy?"}
+              {rol === "repartidor" && "Revisa los pedidos disponibles para entregar."}
+              {rol === "admin" && "Panel de administración activo."}
+            </div>
+          </div>
+        </div>
+      )}
 
       {cargando && <p>Cargando restaurantes...</p>}
       {error && <p className="form-error">{error}</p>}

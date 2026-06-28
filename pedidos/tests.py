@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth.models import User
+from ninja.errors import HttpError
 from catalogo.models import Restaurante, Producto
 from pedidos.models import Pedido
 from pedidos import services
@@ -66,7 +67,8 @@ def test_preparando_avanza_a_en_camino(pedido):
     pedido.save()
     EstadoPreparando().avanzar(pedido)
     pedido.refresh_from_db()
-    assert pedido.estado == "en_camino"
+    # En el nuevo flujo, preparar lleva a 'listo_despacho' para delivery
+    assert pedido.estado == "listo_despacho"
 
 
 @pytest.mark.django_db
@@ -134,6 +136,84 @@ def test_crear_pedido_productos_distintos_restaurantes_falla(usuario, producto):
 
 
 @pytest.mark.django_db
+def test_repartidor_puede_ver_solo_sus_pedidos_como_cliente(usuario, producto):
+    from usuarios.models import PerfilUsuario
+
+    repartidor_a = User.objects.create_user(username="repartidor_a", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_a, rol="repartidor")
+    repartidor_b = User.objects.create_user(username="repartidor_b", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_b, rol="repartidor")
+
+    items = [{"producto_id": producto.id, "cantidad": 1}]
+    pedido_a = services.crear_pedido(repartidor_a, items)
+
+    pedidos_a = services.listar_mis_pedidos(repartidor_a)
+    assert pedido_a in pedidos_a
+
+    pedidos_b = services.listar_mis_pedidos(repartidor_b)
+    assert pedido_a not in pedidos_b
+
+
+@pytest.mark.django_db
+def test_repartidor_b_toma_pedido_de_repartidor_a_y_pedido_no_esta_en_disponibles_para_a(usuario, producto):
+    from usuarios.models import PerfilUsuario
+
+    repartidor_a = User.objects.create_user(username="repartidor_a", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_a, rol="repartidor")
+    repartidor_b = User.objects.create_user(username="repartidor_b", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_b, rol="repartidor")
+
+    items = [{"producto_id": producto.id, "cantidad": 1}]
+    pedido_a = services.crear_pedido(repartidor_a, items)
+
+    disponibles_para_a = services.listar_disponibles(repartidor_a)
+    assert pedido_a not in disponibles_para_a
+
+    disponibles_para_b = services.listar_disponibles(repartidor_b)
+    assert pedido_a in disponibles_para_b
+
+    with pytest.raises(HttpError):
+        services.tomar_pedido(pedido_a.id, repartidor_a)
+
+    pedido_tomado = services.tomar_pedido(pedido_a.id, repartidor_b)
+    assert pedido_tomado.repartidor == repartidor_b
+
+    en_curso_b = services.listar_en_curso(repartidor_b)
+    assert any(p.id == pedido_tomado.id for p in en_curso_b)
+    assert all(p.cliente != repartidor_a.username for p in en_curso_b if p.id != pedido_tomado.id)
+
+
+@pytest.mark.django_db
+def test_repartidor_b_renuncia_pedido_y_se_libera_para_otros(usuario, producto):
+    from usuarios.models import PerfilUsuario
+
+    repartidor_a = User.objects.create_user(username="repartidor_a", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_a, rol="repartidor")
+    repartidor_b = User.objects.create_user(username="repartidor_b", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_b, rol="repartidor")
+
+    items = [{"producto_id": producto.id, "cantidad": 1}]
+    pedido_a = services.crear_pedido(repartidor_a, items)
+
+    pedido_tomado = services.tomar_pedido(pedido_a.id, repartidor_b)
+    assert pedido_tomado.repartidor == repartidor_b
+
+    renunciado = services.renunciar_pedido(pedido_a.id, repartidor_b)
+    assert renunciado.repartidor is None
+
+    disponibles_para_b = services.listar_disponibles(repartidor_b)
+    assert pedido_a not in disponibles_para_b
+
+    disponibles_para_a = services.listar_disponibles(repartidor_a)
+    assert pedido_a not in disponibles_para_a
+
+    repartidor_c = User.objects.create_user(username="repartidor_c", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor_c, rol="repartidor")
+    disponibles_para_c = services.listar_disponibles(repartidor_c)
+    assert pedido_a in disponibles_para_c
+
+
+@pytest.mark.django_db
 def test_avanzar_estado_pedido(pedido):
     # 1. Importamos el modelo con el nombre correcto: PerfilUsuario
     from usuarios.models import PerfilUsuario
@@ -152,8 +232,169 @@ def test_avanzar_estado_pedido(pedido):
 
 @pytest.mark.django_db
 def test_obtener_pedido(pedido):
-    resultado = services.obtener_pedido(pedido.id)
+    # Usar la función centralizada para obtener el pedido como admin
+    from usuarios.models import PerfilUsuario
+    perfil, created = PerfilUsuario.objects.get_or_create(user=pedido.cliente)
+    perfil.rol = "admin"
+    perfil.save()
+
+    resultado = services.obtener_pedido(pedido.id, pedido.cliente, purpose="view")
     assert resultado.id == pedido.id
+
+
+@pytest.mark.django_db
+def test_restaurante_ve_solo_sus_pedidos(usuario, restaurante, producto):
+    # Crear dos restaurantes y usuarios asociados
+    from django.contrib.auth.models import User
+    from usuarios.models import PerfilUsuario
+
+    rest_user_a = User.objects.create_user(username="rest_a", password="pass123")
+    PerfilUsuario.objects.create(user=rest_user_a, rol="restaurante")
+    rest_a = Restaurante.objects.create(
+        nombre="Rest A",
+        descripcion="A",
+        categoria="X",
+        horario="10-22",
+        tiempo_entrega="20 min",
+    )
+    rest_a.user = rest_user_a
+    rest_a.save()
+
+    rest_user_b = User.objects.create_user(username="rest_b", password="pass123")
+    PerfilUsuario.objects.create(user=rest_user_b, rol="restaurante")
+    rest_b = Restaurante.objects.create(
+        nombre="Rest B",
+        descripcion="B",
+        categoria="Y",
+        horario="10-22",
+        tiempo_entrega="25 min",
+    )
+    rest_b.user = rest_user_b
+    rest_b.save()
+
+    # Crear pedidos para cada restaurante
+    cliente = usuario
+    p1 = Pedido.objects.create(cliente=cliente, restaurante=rest_a, estado="pendiente")
+    p2 = Pedido.objects.create(cliente=cliente, restaurante=rest_b, estado="pendiente")
+
+    # rest_a debe ver solo p1
+    pedidos_a = services.listar_pedidos(rest_user_a)
+    assert any(p.id == p1.id for p in pedidos_a)
+    assert all(p.restaurante_id == rest_a.id for p in pedidos_a)
+
+    # rest_b debe ver solo p2
+    pedidos_b = services.listar_pedidos(rest_user_b)
+    assert any(p.id == p2.id for p in pedidos_b)
+    assert all(p.restaurante_id == rest_b.id for p in pedidos_b)
+
+
+@pytest.mark.django_db
+def test_restaurante_no_accede_pedido_otro_restaurante(usuario, producto):
+    from django.contrib.auth.models import User
+    from usuarios.models import PerfilUsuario
+
+    # Crear restaurantes y usuarios
+    rest_user_a = User.objects.create_user(username="rest_a2", password="pass123")
+    PerfilUsuario.objects.create(user=rest_user_a, rol="restaurante")
+    rest_a = Restaurante.objects.create(
+        nombre="Rest A2",
+        descripcion="A",
+        categoria="X",
+        horario="10-22",
+        tiempo_entrega="20 min",
+    )
+    rest_a.user = rest_user_a
+    rest_a.save()
+
+    rest_user_b = User.objects.create_user(username="rest_b2", password="pass123")
+    PerfilUsuario.objects.create(user=rest_user_b, rol="restaurante")
+    rest_b = Restaurante.objects.create(
+        nombre="Rest B2",
+        descripcion="B",
+        categoria="Y",
+        horario="10-22",
+        tiempo_entrega="25 min",
+    )
+    rest_b.user = rest_user_b
+    rest_b.save()
+
+    # Pedido para rest_a
+    pedido = Pedido.objects.create(cliente=usuario, restaurante=rest_a, estado="pendiente")
+
+    # rest_b no puede obtener el pedido
+    with pytest.raises(HttpError):
+        services.obtener_pedido(pedido.id, rest_user_b, purpose="view")
+
+    # rest_a sí puede
+    p_ok = services.obtener_pedido(pedido.id, rest_user_a, purpose="view")
+    assert p_ok.id == pedido.id
+
+
+@pytest.mark.django_db
+def test_repartidor_no_puede_avanzar_retiro(usuario, producto):
+    from usuarios.models import PerfilUsuario
+
+    repartidor = User.objects.create_user(username="rep_x", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor, rol="repartidor")
+
+    # Crear pedido de retiro
+    pedido = services.crear_pedido(usuario, [{"producto_id": producto.id, "cantidad": 1}], tipo_entrega="retiro")
+
+    # Repartidor no puede avanzar estado (solo restaurante/admin)
+    with pytest.raises(HttpError):
+        services.avanzar_estado_pedido(pedido.id, repartidor)
+
+
+@pytest.mark.django_db
+def test_restaurante_no_puede_avanzar_pedido_otro_restaurante(usuario, restaurante):
+    from django.contrib.auth.models import User
+    from usuarios.models import PerfilUsuario
+
+    # Crear dos restaurantes y usuarios
+    rest_user_a = User.objects.create_user(username="rest_x", password="pass123")
+    PerfilUsuario.objects.create(user=rest_user_a, rol="restaurante")
+    rest_a = Restaurante.objects.create(
+        nombre="Rest X",
+        descripcion="X",
+        categoria="C",
+        horario="10-22",
+        tiempo_entrega="20 min",
+    )
+    rest_a.user = rest_user_a
+    rest_a.save()
+
+    rest_user_b = User.objects.create_user(username="rest_y", password="pass123")
+    PerfilUsuario.objects.create(user=rest_user_b, rol="restaurante")
+    rest_b = Restaurante.objects.create(
+        nombre="Rest Y",
+        descripcion="Y",
+        categoria="D",
+        horario="10-22",
+        tiempo_entrega="25 min",
+    )
+    rest_b.user = rest_user_b
+    rest_b.save()
+
+    # Pedido pertenece a rest_a
+    pedido = Pedido.objects.create(cliente=usuario, restaurante=rest_a, estado="pendiente")
+
+    # rest_b no puede avanzar el pedido de rest_a
+    with pytest.raises(HttpError):
+        services.avanzar_estado_pedido(pedido.id, rest_user_b)
+
+
+@pytest.mark.django_db
+def test_repartidor_no_puede_tomar_retiro(usuario, producto):
+    from usuarios.models import PerfilUsuario
+
+    repartidor = User.objects.create_user(username="rep_test", password="pass123")
+    PerfilUsuario.objects.create(user=repartidor, rol="repartidor")
+
+    # Crear pedido de tipo retiro
+    pedido = services.crear_pedido(usuario, [{"producto_id": producto.id, "cantidad": 1}], tipo_entrega="retiro")
+
+    with pytest.raises(HttpError):
+        services.tomar_pedido(pedido.id, repartidor)
 
 
 # ─── Tests de nombre() en States ─────────────────────────

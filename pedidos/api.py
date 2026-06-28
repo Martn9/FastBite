@@ -1,16 +1,38 @@
 from typing import List
-from ninja import Router
+from ninja import Schema, Router
+from ninja.errors import HttpError
 from .schemas import (
     PedidoSchema,
     CrearPedidoSchema,
     CalificarPedidoSchema,
     ConfirmarEntregaRepartidorSchema,
+    ConfirmarRetiroSchema,
+    CancelarPedidoSchema,
+    CalificarRestauranteSchema,
 )
 from .auth import JWTAuth
 from . import services
 
 router = Router()
 jwt_auth = JWTAuth()
+
+class ValidarCuponSchema(Schema):
+    codigo: str
+
+class RespuestaCuponSchema(Schema):
+    valido: bool
+    porcentaje: int = 0
+    mensaje: str = ""
+
+@router.post("/cupones/validar", response=RespuestaCuponSchema)
+def validar_cupon(request, data: ValidarCuponSchema):
+    """Valida un código de cupón de descuento."""
+    from .models import CuponDescuento
+    try:
+        cupon = CuponDescuento.objects.get(codigo=data.codigo, activo=True)
+        return {"valido": True, "porcentaje": cupon.porcentaje, "mensaje": "Cupón aplicado exitosamente"}
+    except CuponDescuento.DoesNotExist:
+        return {"valido": False, "porcentaje": 0, "mensaje": "Cupón inválido o inactivo"}
 
 
 def _con_pin(pedido, request):
@@ -20,6 +42,11 @@ def _con_pin(pedido, request):
     """
     usuario = request.auth
     rol = getattr(getattr(usuario, "perfil", None), "rol", None)
+    # No mostramos PIN para pedidos de tipo 'retiro' en ningún caso.
+    if pedido.tipo_entrega == "retiro":
+        pedido.pin_entrega = None
+        return pedido
+
     if rol != "cliente" or pedido.cliente_id != usuario.id:
         pedido.pin_entrega = None
     return pedido
@@ -34,6 +61,7 @@ def crear_pedido(request, data: CrearPedidoSchema):
         items,
         tipo_entrega=data.tipo_entrega,
         direccion_entrega=data.direccion_entrega,
+        codigo_cupon=data.codigo_cupon,
     )
     # El cliente siempre ve su propio PIN al crear el pedido
     return pedido
@@ -75,6 +103,24 @@ def listar_rechazados(request):
     return list(pedidos)
 
 
+@router.get("/pedidos/en-curso", response=List[PedidoSchema], auth=jwt_auth)
+def listar_en_curso(request):
+    """Solo repartidor: pedidos asignados que están en curso (no entregados)."""
+    pedidos = services.listar_en_curso(request.auth)
+    # El repartidor no debe ver el PIN en la lista
+    for p in pedidos:
+        p.pin_entrega = None
+    return list(pedidos)
+
+
+@router.post("/pedidos/{pedido_id}/renunciar", response=PedidoSchema, auth=jwt_auth)
+def renunciar_pedido(request, pedido_id: int):
+    """Un repartidor renuncia a un pedido que ya tiene asignado."""
+    pedido = services.renunciar_pedido(pedido_id, request.auth)
+    pedido.pin_entrega = None
+    return pedido
+
+
 @router.get("/pedidos/entregados", response=List[PedidoSchema], auth=jwt_auth)
 def listar_entregados(request):
     """Solo repartidor: historial de pedidos ya entregados."""
@@ -90,7 +136,8 @@ def listar_entregados(request):
 @router.get("/pedidos/{pedido_id}", response=PedidoSchema, auth=jwt_auth)
 def obtener_pedido(request, pedido_id: int):
     """Obtiene el estado actual de un pedido. El PIN solo se devuelve al cliente."""
-    pedido = services.obtener_pedido(pedido_id)
+    # Usar la función centralizada de acceso que aplica validaciones por rol.
+    pedido = services.obtener_pedido(pedido_id, request.auth, purpose="view")
     return _con_pin(pedido, request)
 
 
@@ -137,4 +184,29 @@ def confirmar_recepcion(request, pedido_id: int, data: CalificarPedidoSchema):
     pedido = services.confirmar_recepcion_cliente(
         pedido_id, request.auth, data.calificacion
     )
+    return _con_pin(pedido, request)
+
+
+@router.post("/pedidos/{pedido_id}/retirar", response=PedidoSchema, auth=jwt_auth)
+def retirar_pedido(request, pedido_id: int, data: ConfirmarRetiroSchema):
+    """El cliente (o restaurante) marca un pedido de tipo 'retiro' como retirado.
+    El restaurante debe ingresar el PIN para confirmar el retiro; el cliente
+    puede marcarlo sin PIN desde su vista.
+    """
+    pedido = services.confirmar_retiro(pedido_id, request.auth, pin=data.pin)
+    pedido.pin_entrega = None
+    return _con_pin(pedido, request)
+
+
+@router.post("/pedidos/{pedido_id}/cancelar", response=PedidoSchema, auth=jwt_auth)
+def cancelar_pedido(request, pedido_id: int, data: CancelarPedidoSchema):
+    """Cliente o restaurante cancelan un pedido (con razón opcional)."""
+    pedido = services.cancelar_pedido(pedido_id, request.auth, razon=(data.razon or ""))
+    return _con_pin(pedido, request)
+
+
+@router.post("/pedidos/{pedido_id}/calificar-restaurante", response=PedidoSchema, auth=jwt_auth)
+def calificar_restaurante(request, pedido_id: int, data: CalificarRestauranteSchema):
+    """El cliente califica al restaurante tras recibir o retirar el pedido."""
+    pedido = services.calificar_restaurante(pedido_id, request.auth, data.calificacion)
     return _con_pin(pedido, request)

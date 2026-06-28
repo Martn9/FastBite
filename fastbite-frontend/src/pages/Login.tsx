@@ -16,8 +16,15 @@ export default function Login() {
     setError(null);
     setCargando(true);
     try {
-      await login(username, password);
-      navigate("/");
+      const result = await login(username, password);
+      // Redirigir automáticamente según el rol devuelto por el login
+      if (result.rol === "restaurante") {
+        navigate("/restaurante");
+      } else if (result.rol === "repartidor") {
+        navigate("/pedidos");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "No se pudo iniciar sesión",

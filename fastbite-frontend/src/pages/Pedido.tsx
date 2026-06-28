@@ -5,20 +5,36 @@ import { ApiError } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Pedido as PedidoType, EstadoPedido } from "../types";
 
-// ─── Configuración de etapas ─────────────────────────────────────────────────
+// ─── Configuración de etapas (dinámica según tipo_entrega) ────────────────
+// Generamos las etapas en función de `pedido.tipo_entrega`. Esto permite
+// mantener dos flujos distintos sin duplicar vistas: delivery y retiro.
+function getEtapas(tipo_entrega: string) {
+  if (tipo_entrega === "retiro") {
+    return [
+      { clave: "pendiente", etiqueta: "Pedido recibido", emoji: "🧾" },
+      { clave: "preparando", etiqueta: "En preparación", emoji: "👨‍🍳" },
+      { clave: "listo_retiro", etiqueta: "Listo para retirar", emoji: "📦" },
+      { clave: "retirado", etiqueta: "Retirado", emoji: "🏁" },
+    ];
+  }
 
-const ETAPAS: { clave: EstadoPedido; etiqueta: string; emoji: string }[] = [
-  { clave: "pendiente",  etiqueta: "Pedido recibido",  emoji: "🧾" },
-  { clave: "preparando", etiqueta: "En preparación",   emoji: "👨‍🍳" },
-  { clave: "en_camino",  etiqueta: "En camino",        emoji: "🛵" },
-  { clave: "entregado",  etiqueta: "Entregado",        emoji: "✅" },
-];
+  // Flujo por defecto (delivery)
+  return [
+    { clave: "pendiente", etiqueta: "Pedido recibido", emoji: "🧾" },
+    { clave: "preparando", etiqueta: "En preparación", emoji: "👨‍🍳" },
+    { clave: "en_camino", etiqueta: "En camino", emoji: "🛵" },
+    { clave: "entregado", etiqueta: "Entregado", emoji: "✅" },
+  ];
+}
 
-const LABEL_AVANZAR: Record<EstadoPedido, string> = {
-  pendiente:  "Iniciar preparación →",
-  preparando: "Salir a entregar 🛵",
-  en_camino:  "",   // este paso usa el flujo de PIN
-  entregado:  "",
+const LABEL_AVANZAR: Record<string, string> = {
+  pendiente: "Iniciar preparación →",
+  preparando: "Marcar siguiente etapa →",
+  listo_despacho: "Esperando repartidor",
+  listo_retiro: "Marcar como retirado →",
+  en_camino: "", // el avance a 'entregado' usa el flujo de PIN
+  entregado: "",
+  retirado: "",
 };
 
 // ─── Subcomponente: estrellas de calificación ─────────────────────────────────
@@ -169,6 +185,10 @@ export default function Pedido() {
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [errorPin, setErrorPin] = useState<string | null>(null);
   const [cargandoPin, setCargandoPin] = useState(false);
+  // Retiro PIN (restaurante confirma retiro con PIN)
+  const [pinRetiro, setPinRetiro] = useState("");
+  const [errorPinRetiro, setErrorPinRetiro] = useState<string | null>(null);
+  const [cargandoPinRetiro, setCargandoPinRetiro] = useState(false);
 
   // Confirmación del cliente
   const [calificacion, setCalificacion] = useState(5);
@@ -240,6 +260,43 @@ export default function Pedido() {
     }
   }
 
+  async function handleConfirmarRetiro() {
+    if (!id) return;
+    setCargandoPinRetiro(true);
+    setErrorPinRetiro(null);
+    try {
+      const actualizado = await api.confirmarRetiroConPin(Number(id), pinRetiro);
+      setPedido(actualizado);
+    } catch (err) {
+      setErrorPinRetiro(
+        err instanceof ApiError ? err.message : "No se pudo confirmar el retiro.",
+      );
+    } finally {
+      setCargandoPinRetiro(false);
+    }
+  }
+
+  async function handleCancelar() {
+    if (!id) return;
+    const razon = window.prompt("Motivo de la cancelación (opcional):", "") || "";
+    try {
+      const actualizado = await api.cancelarPedido(Number(id), razon);
+      setPedido(actualizado);
+    } catch (err) {
+      setErrorAccion(err instanceof ApiError ? err.message : "No se pudo cancelar el pedido.");
+    }
+  }
+
+  async function handleCalificarRestaurante() {
+    if (!id) return;
+    try {
+      const actualizado = await api.calificarRestaurante(Number(id), calificacion);
+      setPedido(actualizado);
+    } catch (err) {
+      setErrorConfirmar(err instanceof ApiError ? err.message : "No se pudo calificar.");
+    }
+  }
+
   async function handleConfirmarRecepcion() {
     if (!id) return;
     setConfirmando(true);
@@ -279,21 +336,28 @@ export default function Pedido() {
 
   // ─── Lógica de permisos ────────────────────────────────────────────────────
 
-  const indiceActual = ETAPAS.findIndex((e) => e.clave === pedido.estado);
+  const etapas = getEtapas(pedido.tipo_entrega);
+  const indiceActual = etapas.findIndex((e) => e.clave === pedido.estado);
   const esEntregado  = pedido.estado === "entregado";
   const esEnCamino   = pedido.estado === "en_camino";
 
   const esRepartidorAsignado =
     rol === "repartidor" && pedido.repartidor === usuario;
+  const esPedidoPropio = rol === "repartidor" && pedido.cliente === usuario;
 
   // "Avanzar" solo aplica para pendiente→preparando y preparando→en_camino
+  const puedeTomar =
+    rol === "repartidor" &&
+    pedido.repartidor === null &&
+    !esEntregado &&
+    !esPedidoPropio &&
+    pedido.tipo_entrega !== "retiro";
+
   const puedeAvanzar =
     !esEntregado &&
     !esEnCamino &&
-    (rol === "admin" || esRepartidorAsignado);
-
-  const puedeTomar =
-    rol === "repartidor" && pedido.repartidor === null && !esEntregado;
+    (rol === "admin" || rol === "restaurante") &&
+    (pedido.estado === "pendiente" || pedido.estado === "preparando");
 
   // El formulario de PIN aparece cuando el repartidor llega al último paso
   const puedeIngresarPin =
@@ -344,21 +408,53 @@ export default function Pedido() {
           </div>
         )}
 
-        <div className="pedido-info-row">
-          <span className="pedido-info-label">🛵 Repartidor</span>
-          <span>
-            {pedido.repartidor ?? (
-              <em style={{ color: "#b4ab9a" }}>Sin asignar aún</em>
-            )}
-          </span>
-        </div>
+        {pedido.tipo_entrega !== "retiro" ? (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">🛵 Repartidor</span>
+            <span>
+              {pedido.repartidor ?? (
+                <em style={{ color: "#b4ab9a" }}>Sin asignar aún</em>
+              )}
+            </span>
+          </div>
+        ) : (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">🏪 Retirar en</span>
+            <span>{pedido.restaurante}</span>
+          </div>
+        )}
 
         {(rol === "repartidor" || rol === "admin") && pedido.pago_repartidor > 0 && (
           <div className="pedido-info-row">
             <span className="pedido-info-label">💰 Tu pago</span>
-            <strong style={{ color: "var(--olive)" }}>
+            <strong style={{ color: "var(--success-color)" }}>
               ${pedido.pago_repartidor.toLocaleString("es-CL")}
             </strong>
+          </div>
+        )}
+
+        {pedido.tipo_entrega === "retiro" && pedido.restaurante_tiempo_entrega && (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">⏱️ Listo en</span>
+            <span>{pedido.restaurante_tiempo_entrega}</span>
+          </div>
+        )}
+
+        {pedido.descuento_aplicado > 0 && (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">🎟️ Descuento</span>
+            <span style={{ color: "#16a34a", fontWeight: 700 }}>
+              −${pedido.descuento_aplicado.toLocaleString("es-CL")}
+            </span>
+          </div>
+        )}
+
+        {pedido.total_final > 0 && (
+          <div className="pedido-info-row" style={{ fontWeight: 700 }}>
+            <span className="pedido-info-label">💳 Total</span>
+            <span style={{ fontSize: "1.05rem" }}>
+              ${pedido.total_final.toLocaleString("es-CL")}
+            </span>
           </div>
         )}
 
@@ -366,22 +462,18 @@ export default function Pedido() {
 
         {/* ── Tracker de estados ────────────────────────────────────────── */}
         <div className="estado-tracker">
-          {ETAPAS.map((etapa, i) => {
-            const done    = i < indiceActual;
+          {getEtapas(pedido.tipo_entrega).map((etapa, i) => {
+            const done = i < indiceActual;
             const current = i === indiceActual;
             return (
               <div
                 key={etapa.clave}
                 className={`estado-step ${done ? "done" : ""} ${current ? "current" : ""}`}
               >
-                <div className="estado-dot">
-                  {done ? "✓" : current ? etapa.emoji : "·"}
-                </div>
+                <div className="estado-dot">{done ? "✓" : current ? etapa.emoji : "·"}</div>
                 <div className="estado-info">
                   <span className="estado-label">{etapa.etiqueta}</span>
-                  {current && (
-                    <span className="estado-sublabel">Estado actual</span>
-                  )}
+                  {current && <span className="estado-sublabel">Estado actual</span>}
                 </div>
               </div>
             );
@@ -430,6 +522,26 @@ export default function Pedido() {
           />
         )}
 
+        {/* ── Formulario PIN para retiro (restaurante) ─────────────────── */}
+        {rol === "restaurante" && pedido.tipo_entrega === "retiro" && pedido.estado === "listo_retiro" && (
+          <div className="pin-card pin-card--restaurante">
+            <p className="pin-titulo">🔐 Confirmar retiro con PIN</p>
+            <p className="pin-descripcion">Ingresa el PIN que te dio el cliente para confirmar que retiró su pedido.</p>
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+              <input
+                className="pin-input"
+                value={pinRetiro}
+                onChange={(e) => setPinRetiro(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="0000"
+              />
+              <button className="btn" disabled={cargandoPinRetiro || pinRetiro.length !== 4} onClick={handleConfirmarRetiro}>
+                {cargandoPinRetiro ? "Confirmando..." : "Confirmar retiro"}
+              </button>
+            </div>
+            {errorPinRetiro && <p className="form-error" style={{ marginTop: "0.6rem" }}>{errorPinRetiro}</p>}
+          </div>
+        )}
+
         {/* ── Confirmación del cliente ──────────────────────────────────── */}
         {puedeConfirmar && (
           <div className="confirmacion-card">
@@ -465,6 +577,28 @@ export default function Pedido() {
               </strong>{" "}
               a tu repartidor.
             </p>
+          </div>
+        )}
+
+        {/* ── Calificar Restaurante (cliente) ───────────────────────────── */}
+        {rol === "cliente" && (pedido.estado === "entregado" || pedido.estado === "retirado") && pedido.calificacion_restaurante == null && (
+          <div className="confirmacion-card" style={{ marginTop: "1rem" }}>
+            <p className="confirmacion-titulo">¿Cómo estuvo el restaurante?</p>
+            <StarRating value={calificacion} onChange={setCalificacion} />
+            <button
+              className="btn btn-block"
+              style={{ marginTop: "0.6rem" }}
+              onClick={handleCalificarRestaurante}
+            >
+              Enviar calificación
+            </button>
+          </div>
+        )}
+
+        {/* ── Cancelar pedido (cliente o restaurante) ───────────────────── */}
+        {(rol === "cliente" && pedido.cliente === usuario || rol === "restaurante") && !["entregado", "retirado", "cancelado"].includes(pedido.estado) && (
+          <div style={{ marginTop: "1rem" }}>
+            <button className="btn-ghost" onClick={handleCancelar}>Cancelar pedido</button>
           </div>
         )}
 
