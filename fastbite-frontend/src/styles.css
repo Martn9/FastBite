@@ -546,3 +546,307 @@ button {
   background: #fff0eb;
   color: var(--ember-dark);
 }
+
+/* ====================================================================
+   NUEVOS ESTILOS – pegar al final de styles.css
+   ==================================================================== */
+
+/* ─── Detalle de pedido ─────────────────────────────────────────────── */
+
+.pedido-detalle {
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 4px 4px 0 var(--charcoal);
+}
+
+.pedido-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pedido-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ember);
+}
+
+.pedido-titulo {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin: 0.15rem 0 0;
+  line-height: 1.1;
+}
+
+.pedido-meta {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--olive);
+  margin: 0.3rem 0 0;
+}
+
+.pedido-tipo-badge {
+  background: var(--charcoal);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pedido-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pedido-info-row:last-of-type {
+  border-bottom: none;
+}
+
+.pedido-info-label {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  color: var(--olive);
+  letter-spacing: 0.04em;
+}
+
+.pedido-divider {
+  border: none;
+  border-top: 2px solid var(--line);
+  margin: 1.25rem 0;
+}
+
+/* ─── Tracker de estados ────────────────────────────────────────────── */
+
+.estado-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.estado-step {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.estado-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  color: #b4ab9a;
+  background: var(--cream);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.estado-step.done .estado-dot {
+  background: var(--olive);
+  border-color: var(--olive);
+  color: var(--cream);
+  font-size: 0.75rem;
+}
+
+.estado-step.current .estado-dot {
+  background: var(--paper);
+  border-color: var(--ember);
+  color: var(--ember);
+  box-shadow: 0 0 0 3px rgba(214, 80, 44, 0.18);
+  font-size: 1rem;
+}
+
+.estado-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.estado-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #b4ab9a;
+}
+
+.estado-step.done .estado-label {
+  color: var(--charcoal);
+}
+
+.estado-step.current .estado-label {
+  color: var(--ember);
+}
+
+.estado-sublabel {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ember);
+  margin-top: 0.1rem;
+}
+
+/* ─── Botón de acción principal ─────────────────────────────────────── */
+
+.accion-btn {
+  margin-top: 1.25rem;
+  padding: 0.85rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 9px;
+}
+
+/* ─── Confirmación del cliente ──────────────────────────────────────── */
+
+.confirmacion-card {
+  margin-top: 1.25rem;
+  background: #fff8f0;
+  border: 2px dashed var(--ember);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  text-align: center;
+}
+
+.confirmacion-card--ok {
+  background: #f0faf0;
+  border-color: var(--olive);
+  border-style: solid;
+}
+
+.confirmacion-titulo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.confirmacion-sub {
+  font-size: 0.88rem;
+  color: #6b665e;
+  margin: 0 0 0.75rem;
+}
+
+/* ─── Estrellas de calificación ─────────────────────────────────────── */
+
+.star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.9rem;
+  color: #d8cfc0;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.1s, transform 0.1s;
+}
+
+.star-btn.active {
+  color: #f5a623;
+}
+
+.star-btn:hover {
+  transform: scale(1.15);
+}
+
+/* ─── Lista de pedidos (cards) ──────────────────────────────────────── */
+
+.pedidos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 680px;
+}
+
+.pedido-card {
+  background: var(--paper);
+  border: 2px solid var(--charcoal);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.pedido-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.pedido-card__num {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.pedido-card__restaurante {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--olive);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.1rem;
+}
+
+.pedido-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  font-size: 0.84rem;
+  color: #6b665e;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pedido-card__fecha {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+
+.pedido-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ─── Badges de estado ──────────────────────────────────────────────── */
+
+.estado-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge-pendiente  { background: #f5ecd4; color: #7a5c1e; }
+.badge-preparando { background: #ddf0ff; color: #1a5a8a; }
+.badge-en-camino  { background: #fff0eb; color: var(--ember-dark); }
+.badge-entregado  { background: #edf7ed; color: #1a5a1a; }

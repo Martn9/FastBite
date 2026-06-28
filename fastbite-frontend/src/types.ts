@@ -40,6 +40,13 @@ export interface Pedido {
   restaurante: string;
   estado: EstadoPedido;
   creado_en: string;
+  // Campos de entrega y pago
+  tipo_entrega: string;
+  direccion_entrega: string | null;
+  pago_repartidor: number;
+  // Confirmación y calificación del cliente
+  confirmado_cliente: boolean;
+  calificacion_repartidor: number | null;
 }
 
 export interface ItemCarrito {

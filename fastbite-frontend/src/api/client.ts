@@ -34,13 +34,12 @@ async function parseOrThrow(res: Response) {
 // IMPORTANTE: registro y login en el backend (django-ninja) reciben los
 // parámetros como QUERY STRING, no como JSON body, porque las funciones
 // de usuarios/api.py no usan un Schema de Pydantic para esos endpoints.
-// Esto se confirmó probando el backend directamente. Si en algún momento
-// el equipo cambia esos endpoints para recibir un body, hay que actualizar
-// las funciones de abajo (login, registrarCliente, registrarRepartidor).
 function withQuery(path: string, params: Record<string, string>) {
   const qs = new URLSearchParams(params).toString();
   return `${BASE_URL}${path}?${qs}`;
 }
+
+// ─── Autenticación ────────────────────────────────────────────────────────────
 
 export async function login(
   username: string,
@@ -58,7 +57,7 @@ export async function login(
     throw new ApiError("Usuario o contraseña incorrectos", 401);
   }
   return data;
-} 
+}
 
 export async function registrarCliente(
   username: string,
@@ -84,6 +83,8 @@ export async function registrarRepartidor(
   return parseOrThrow(res);
 }
 
+// ─── Catálogo ─────────────────────────────────────────────────────────────────
+
 export async function listarRestaurantes(): Promise<Restaurante[]> {
   const res = await fetch(`${BASE_URL}/catalogo/restaurantes`);
   return parseOrThrow(res);
@@ -98,6 +99,8 @@ export async function listarProductos(
   return parseOrThrow(res);
 }
 
+// ─── Pedidos – cliente ────────────────────────────────────────────────────────
+
 export async function crearPedido(
   items: { producto_id: number; cantidad: number }[],
 ): Promise<Pedido> {
@@ -109,22 +112,8 @@ export async function crearPedido(
   return parseOrThrow(res);
 }
 
-export async function listarPedidos(): Promise<Pedido[]> {
-  const res = await fetch(`${BASE_URL}/pedidos/pedidos`, {
-    headers: authHeader(),
-  });
-  return parseOrThrow(res);
-}
-
 export async function obtenerPedido(id: number): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}`, {
-    headers: authHeader(),
-  });
-  return parseOrThrow(res);
-}
-
-export async function listarDisponibles(): Promise<Pedido[]> {
-  const res = await fetch(`${BASE_URL}/pedidos/pedidos/disponibles`, {
     headers: authHeader(),
   });
   return parseOrThrow(res);
@@ -137,6 +126,28 @@ export async function listarMisPedidos(): Promise<Pedido[]> {
   return parseOrThrow(res);
 }
 
+/** El cliente confirma la recepción del pedido y califica al repartidor (1–5). */
+export async function confirmarEntrega(
+  id: number,
+  calificacion: number,
+): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/confirmar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ calificacion }),
+  });
+  return parseOrThrow(res);
+}
+
+// ─── Pedidos – repartidor ─────────────────────────────────────────────────────
+
+export async function listarDisponibles(): Promise<Pedido[]> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/disponibles`, {
+    headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
 export async function listarRechazados(): Promise<Pedido[]> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/rechazados`, {
     headers: authHeader(),
@@ -144,9 +155,8 @@ export async function listarRechazados(): Promise<Pedido[]> {
   return parseOrThrow(res);
 }
 
-export async function rechazarPedido(id: number): Promise<Pedido> {
-  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/rechazar`, {
-    method: "POST",
+export async function listarEntregados(): Promise<Pedido[]> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/entregados`, {
     headers: authHeader(),
   });
   return parseOrThrow(res);
@@ -160,9 +170,26 @@ export async function tomarPedido(id: number): Promise<Pedido> {
   return parseOrThrow(res);
 }
 
+export async function rechazarPedido(id: number): Promise<Pedido> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/rechazar`, {
+    method: "POST",
+    headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
 export async function avanzarPedido(id: number): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/${id}/avanzar`, {
     method: "POST",
+    headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
+// ─── Pedidos – admin ──────────────────────────────────────────────────────────
+
+export async function listarPedidos(): Promise<Pedido[]> {
+  const res = await fetch(`${BASE_URL}/pedidos/pedidos`, {
     headers: authHeader(),
   });
   return parseOrThrow(res);

@@ -3,18 +3,20 @@ import { Link } from "react-router-dom";
 import type { Pedido } from "../types";
 import { ApiError } from "../api/client";
 
-const ETIQUETAS: Record<string, string> = {
-  pendiente: "Pendiente",
-  preparando: "Preparando",
-  en_camino: "En camino",
-  entregado: "Entregado",
+const ESTADO_CONFIG: Record<
+  string,
+  { label: string; emoji: string; clase: string }
+> = {
+  pendiente:  { label: "Pendiente",   emoji: "🧾", clase: "badge-pendiente" },
+  preparando: { label: "Preparando",  emoji: "👨‍🍳", clase: "badge-preparando" },
+  en_camino:  { label: "En camino",   emoji: "🛵", clase: "badge-en-camino" },
+  entregado:  { label: "Entregado",   emoji: "✅", clase: "badge-entregado" },
 };
 
 interface Props {
   titulo: string;
   subtitulo: string;
   cargarPedidos: () => Promise<Pedido[]>;
-  // Si se pasan, se muestran botones "Tomar" / "Rechazar" en cada fila.
   onTomar?: (id: number) => Promise<unknown>;
   onRechazar?: (id: number) => Promise<unknown>;
   mensajeVacio?: string;
@@ -52,7 +54,9 @@ export default function ListaPedidos({
       await onTomar(id);
       recargar();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No se pudo tomar el pedido.");
+      setError(
+        err instanceof ApiError ? err.message : "No se pudo tomar el pedido.",
+      );
     } finally {
       setAccionEnCurso(null);
     }
@@ -66,63 +70,108 @@ export default function ListaPedidos({
       recargar();
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "No se pudo rechazar el pedido.",
+        err instanceof ApiError
+          ? err.message
+          : "No se pudo rechazar el pedido.",
       );
     } finally {
       setAccionEnCurso(null);
     }
   }
 
+  const ocupado = (id: number) => accionEnCurso === id;
+
   return (
     <div className="page">
       <h1 className="page-title">{titulo}</h1>
       <p className="page-subtitle">{subtitulo}</p>
 
-      {cargando && <p>Cargando...</p>}
       {error && <p className="form-error">{error}</p>}
+
+      {cargando && (
+        <div className="empty-state">Cargando pedidos...</div>
+      )}
 
       {!cargando && pedidos.length === 0 && (
         <div className="empty-state">{mensajeVacio}</div>
       )}
 
-      <div className="form-card" style={{ maxWidth: "620px" }}>
-        {pedidos.map((p) => (
-          <div className="product-row" key={p.id}>
-            <div className="info">
-              <h4>
-                Pedido #{p.id} · {p.restaurante}
-              </h4>
-              <p>
-                {ETIQUETAS[p.estado] ?? p.estado} ·{" "}
-                {p.repartidor ? `Repartidor: ${p.repartidor}` : "Sin asignar"}
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              {onTomar && (
-                <button
-                  className="btn"
-                  disabled={accionEnCurso === p.id}
-                  onClick={() => manejarTomar(p.id)}
-                >
-                  Tomar
-                </button>
-              )}
-              {onRechazar && (
-                <button
-                  className="btn-ghost"
-                  disabled={accionEnCurso === p.id}
-                  onClick={() => manejarRechazar(p.id)}
-                >
-                  Rechazar
-                </button>
-              )}
-              <Link to={`/pedidos/${p.id}`} className="btn-ghost">
-                Ver
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
+      {!cargando && pedidos.length > 0 && (
+        <div className="pedidos-list">
+          {pedidos.map((p) => {
+            const cfg = ESTADO_CONFIG[p.estado] ?? {
+              label: p.estado,
+              emoji: "📦",
+              clase: "",
+            };
+
+            return (
+              <div className="pedido-card" key={p.id}>
+                {/* ── Cabecera ─────────────────────────────────────── */}
+                <div className="pedido-card__head">
+                  <div>
+                    <span className="pedido-card__num">Pedido #{p.id}</span>
+                    <span className="pedido-card__restaurante">
+                      {p.restaurante}
+                    </span>
+                  </div>
+                  <span className={`estado-badge ${cfg.clase}`}>
+                    {cfg.emoji} {cfg.label}
+                  </span>
+                </div>
+
+                {/* ── Detalles ──────────────────────────────────────── */}
+                <div className="pedido-card__meta">
+                  <span>
+                    👤 {p.cliente}
+                  </span>
+                  <span>
+                    {p.repartidor
+                      ? `🛵 ${p.repartidor}`
+                      : "🛵 Sin asignar"}
+                  </span>
+                  <span>
+                    {p.tipo_entrega === "retiro" ? "🏪 Retiro" : "🛵 Delivery"}
+                  </span>
+                  <span className="pedido-card__fecha">
+                    🕐 {new Date(p.creado_en).toLocaleString("es-CL", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                {/* ── Acciones ──────────────────────────────────────── */}
+                <div className="pedido-card__actions">
+                  {onTomar && (
+                    <button
+                      className="btn"
+                      disabled={ocupado(p.id)}
+                      onClick={() => manejarTomar(p.id)}
+                    >
+                      {ocupado(p.id) ? "..." : "🙋 Tomar"}
+                    </button>
+                  )}
+                  {onRechazar && (
+                    <button
+                      className="btn-ghost"
+                      disabled={ocupado(p.id)}
+                      onClick={() => manejarRechazar(p.id)}
+                    >
+                      {ocupado(p.id) ? "..." : "✗ Rechazar"}
+                    </button>
+                  )}
+                  <Link to={`/pedidos/${p.id}`} className="btn-ghost">
+                    Ver detalle →
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
