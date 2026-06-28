@@ -20,7 +20,7 @@ def crear_pedido(
         tipo_entrega=tipo_entrega,
         direccion_entrega=direccion_entrega,
         pago_repartidor=pago,
-        pin_entrega=_generar_pin(),   # ← PIN generado al crear el pedido
+        pin_entrega=_generar_pin(),  # ← PIN generado al crear el pedido
     )
 
     for item in items:

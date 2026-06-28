@@ -73,9 +73,11 @@ class CrearPedidoSchema(Schema):
 
 class ConfirmarEntregaRepartidorSchema(Schema):
     """El repartidor ingresa el PIN del cliente para confirmar la entrega."""
+
     pin: str
 
 
 class CalificarPedidoSchema(Schema):
     """El cliente califica al repartidor tras confirmar la recepción."""
+
     calificacion: int

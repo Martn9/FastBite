@@ -127,7 +127,7 @@ def entregar_con_pin(request, pedido_id: int, data: ConfirmarEntregaRepartidorSc
     Transiciona el pedido de 'en_camino' a 'entregado'.
     """
     pedido = services.confirmar_entrega_con_pin(pedido_id, request.auth, data.pin)
-    pedido.pin_entrega = None   # no devolver el PIN al repartidor
+    pedido.pin_entrega = None  # no devolver el PIN al repartidor
     return pedido
 
 
