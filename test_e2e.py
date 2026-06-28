@@ -91,25 +91,27 @@ def test_e2e_flujo_completo_fastbite(client):
     # 3. Avanzar a "entregado" (¡AHORA REQUIERE PIN!)
     from pedidos.models import Pedido
     import json
-    
+
     # Vamos a la base de datos a leer el PIN secreto que se generó para este pedido
     pedido_actual = Pedido.objects.get(id=pedido_id)
-    pin_secreto = pedido_actual.pin_entrega 
-    
+    pin_secreto = pedido_actual.pin_entrega
+
     # Se lo enviamos a la API en formato JSON
     # (Si en tu schemas.py le pusiste solo "pin", cambia la llave abajo a "pin")
     payload_entregado = {
         "pin_entrega": pin_secreto,
-        "pin": pin_secreto  # Enviamos ambas por si acaso para asegurar el test
+        "pin": pin_secreto,  # Enviamos ambas por si acaso para asegurar el test
     }
-    
+
     res_entregado = client.post(
         url_avanzar,
         data=json.dumps(payload_entregado),
         content_type="application/json",
-        **headers_repartidor
+        **headers_repartidor,
     )
-    assert res_entregado.status_code == 200, f"Fallo al avanzar a entregado. API dice: {res_entregado.content}"
+    assert (
+        res_entregado.status_code == 200
+    ), f"Fallo al avanzar a entregado. API dice: {res_entregado.content}"
     # ─── 7. VERIFICACIÓN FINAL ───────────────────────
     pedido_db = Pedido.objects.get(id=pedido_id)
     assert pedido_db.estado == "entregado"
