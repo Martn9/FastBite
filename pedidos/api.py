@@ -30,6 +30,7 @@ def listar_pedidos(request):
 
 # ─── Rutas estáticas ANTES de /{pedido_id} para evitar conflictos ────────────
 
+
 @router.get("/pedidos/disponibles", response=List[PedidoSchema], auth=jwt_auth)
 def listar_disponibles(request):
     """Solo repartidor: pedidos sin asignar que este repartidor no haya rechazado."""
@@ -55,6 +56,7 @@ def listar_entregados(request):
 
 
 # ─── Rutas dinámicas con {pedido_id} ─────────────────────────────────────────
+
 
 @router.get("/pedidos/{pedido_id}", response=PedidoSchema, auth=jwt_auth)
 def obtener_pedido(request, pedido_id: int):

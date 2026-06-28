@@ -6,33 +6,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pedidos', '0005_pedido_rechazado_por'),
+        ("pedidos", "0005_pedido_rechazado_por"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pedido',
-            name='calificacion_repartidor',
+            model_name="pedido",
+            name="calificacion_repartidor",
             field=models.PositiveSmallIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='pedido',
-            name='confirmado_cliente',
+            model_name="pedido",
+            name="confirmado_cliente",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='pedido',
-            name='direccion_entrega',
+            model_name="pedido",
+            name="direccion_entrega",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='pedido',
-            name='pago_repartidor',
+            model_name="pedido",
+            name="pago_repartidor",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='pedido',
-            name='tipo_entrega',
-            field=models.CharField(choices=[('delivery', 'Delivery'), ('retiro', 'Retiro en Tienda')], default='delivery', max_length=20),
+            model_name="pedido",
+            name="tipo_entrega",
+            field=models.CharField(
+                choices=[("delivery", "Delivery"), ("retiro", "Retiro en Tienda")],
+                default="delivery",
+                max_length=20,
+            ),
         ),
     ]
