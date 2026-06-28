@@ -41,7 +41,6 @@ def test_e2e_flujo_completo_fastbite(client):
     # ─── 4. TRANSACCIÓN DEL CARRITO (Creación del pedido) ─────────────
     url_crear_pedido = "/api/pedidos/pedidos"
 
-    # ESTRUCTURA CORREGIDA: Envolvemos en un diccionario con la llave "items"
     payload_pedido = {"items": [{"producto_id": producto.id, "cantidad": 2}]}
 
     response_pedido = client.post(
@@ -59,18 +58,13 @@ def test_e2e_flujo_completo_fastbite(client):
     pedido_id = datos_pedido.get("id")
 
     # ─── 5. LOGIN DE STAFF/REPARTIDOR PARA AVANZAR ESTADOS ─────
-    # Registramos al empleado por la API para que se genere su Perfil automático
     url_registro_rep = "/api/usuarios/registro-cliente?username=repartidor_e2e&email=rep@mail.com&password=Fuerte123"
     client.post(url_registro_rep)
-
-    # Truco: Lo buscamos en la base de datos y le damos poder de repartidor
-    from django.contrib.auth.models import User
 
     repartidor = User.objects.get(username="repartidor_e2e")
     repartidor.perfil.rol = "admin"
     repartidor.perfil.save()
 
-    # Ahora sí, iniciamos sesión como Repartidor
     url_login_rep = "/api/usuarios/login?username=repartidor_e2e&password=Fuerte123"
     res_login_rep = client.post(url_login_rep)
 
@@ -80,38 +74,30 @@ def test_e2e_flujo_completo_fastbite(client):
     # ─── 6. FLUJO DE ESTADOS (Patrón State) ──────────
     url_avanzar = f"/api/pedidos/pedidos/{pedido_id}/avanzar"
 
-    # 1. Avanzar a "preparando"
-    res_prep = client.post(url_avanzar, **headers_repartidor)
-    assert res_prep.status_code == 200, "Fallo al avanzar estado a preparando"
+    # pendiente → preparando
+    res = client.post(url_avanzar, **headers_repartidor)
+    assert res.status_code == 200, "Fallo al avanzar estado a preparando"
+    assert res.json().get("estado") == "preparando"
 
-    # 2. Avanzar a "en_camino"
-    res_camino = client.post(url_avanzar, **headers_repartidor)
-    assert res_camino.status_code == 200, "Fallo al avanzar estado a en_camino"
+    # preparando → en_camino
+    res = client.post(url_avanzar, **headers_repartidor)
+    assert res.status_code == 200, "Fallo al avanzar estado a en_camino"
+    assert res.json().get("estado") == "en_camino"
 
-    # 3. Avanzar a "entregado" (¡AHORA REQUIERE PIN!)
-    from pedidos.models import Pedido
-    import json
+    # en_camino → entregado (requiere PIN)
+    pedido_db = Pedido.objects.get(id=pedido_id)
+    pin = pedido_db.pin_entrega
 
-    # Vamos a la base de datos a leer el PIN secreto que se generó para este pedido
-    pedido_actual = Pedido.objects.get(id=pedido_id)
-    pin_secreto = pedido_actual.pin_entrega
-
-    # Se lo enviamos a la API en formato JSON
-    # (Si en tu schemas.py le pusiste solo "pin", cambia la llave abajo a "pin")
-    payload_entregado = {
-        "pin_entrega": pin_secreto,
-        "pin": pin_secreto,  # Enviamos ambas por si acaso para asegurar el test
-    }
-
-    res_entregado = client.post(
-        url_avanzar,
-        data=json.dumps(payload_entregado),
+    url_entregar = f"/api/pedidos/pedidos/{pedido_id}/entregar"
+    res = client.post(
+        url_entregar,
+        data=json.dumps({"pin": pin}),
         content_type="application/json",
         **headers_repartidor,
     )
-    assert (
-        res_entregado.status_code == 200
-    ), f"Fallo al avanzar a entregado. API dice: {res_entregado.content}"
+    assert res.status_code == 200, f"Fallo al entregar con PIN: {res.content}"
+    assert res.json().get("estado") == "entregado"
+
     # ─── 7. VERIFICACIÓN FINAL ───────────────────────
-    pedido_db = Pedido.objects.get(id=pedido_id)
+    pedido_db.refresh_from_db()
     assert pedido_db.estado == "entregado"
