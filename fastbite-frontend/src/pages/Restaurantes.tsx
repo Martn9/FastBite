@@ -46,7 +46,6 @@ export default function Restaurantes() {
 
   return (
     <div className="page">
-<<<<<<< Updated upstream
       <div className={`hero-intro ${heroVisible ? "hero-visible" : ""}`}>
         <h1 className="page-title">¿Qué quieres comer hoy?</h1>
         <p className="page-subtitle">Elige tu restaurante y haz tu pedido</p>
@@ -63,22 +62,6 @@ export default function Restaurantes() {
                 {rol === "repartidor" && "Revisa los pedidos disponibles para entregar."}
                 {rol === "admin" && "Panel de administración activo."}
               </div>
-=======
-      <h1 className="page-title">¿Qué quieres comer hoy?</h1>
-      <p className="page-subtitle">Elige tu restaurante y haz tu pedido</p>
-
-      {usuario && (
-        <div className={`dashboard-banner ${rol ?? ""}`}>
-          <span className="banner-emoji">
-            {rol === "repartidor" ? "🛵" : rol === "admin" ? "⚙️" : "👋"}
-          </span>
-          <div className="banner-content">
-            <strong className="banner-title">Hola, {usuario}</strong>
-            <div className="banner-subtitle">
-              {rol === "cliente" && "¿Qué se te antoja hoy?"}
-              {rol === "repartidor" && "Revisa los pedidos disponibles para entregar."}
-              {rol === "admin" && "Panel de administración activo."}
->>>>>>> Stashed changes
             </div>
           </div>
         )}
@@ -116,37 +99,13 @@ export default function Restaurantes() {
         </>
       )}
 
-<<<<<<< Updated upstream
       {!cargando && !error && restaurantes.length > 0 && (
         <div className="card-grid">
-          {restaurantes.map((r, i) => (
-            <Link
-              key={r.id}
-              to={`/restaurantes/${r.id}`}
-              className="card card-enter"
-              style={{ animationDelay: `${i * 0.07}s` }}
-            >
-              <div className="card-emoji">
-                {CATEGORIA_EMOJI[r.categoria] ?? "🍽️"}
-              </div>
-              <span className="eyebrow">{r.categoria}</span>
-              <h3>{r.nombre}</h3>
-              <p>{r.descripcion}</p>
-              <div className="card-footer">
-                <span className="meta">🕐 {r.horario}</span>
-                <span className="delivery-badge">🛵 {r.tiempo_entrega}</span>
-              </div>
-            </Link>
+          {restaurantes.map((r) => (
+            <RestauranteCard key={r.id} r={r} isFav={isFav(r.id)} onToggleFav={() => toggle(r.id)} />
           ))}
         </div>
       )}
-=======
-      <div className="card-grid">
-        {restaurantes.map((r) => (
-          <RestauranteCard key={r.id} r={r} isFav={isFav(r.id)} onToggleFav={() => toggle(r.id)} />
-        ))}
-      </div>
->>>>>>> Stashed changes
     </div>
   );
 }

@@ -4,8 +4,6 @@ import type {
   Pedido,
   LoginResponse,
   MensajeResponse,
-  MetodoPago,
-  DatosPago,
 } from "../types";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api";
@@ -104,21 +102,12 @@ export async function crearPedido(
   items: { producto_id: number; cantidad: number }[],
   tipo_entrega: string = "delivery",
   direccion_entrega?: string,
-  codigo_cupon?: string,
-  metodo_pago: MetodoPago = "efectivo",
-  datos_pago?: DatosPago,
+  codigo_cupon?: string
 ): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({
-      items,
-      tipo_entrega,
-      direccion_entrega,
-      codigo_cupon,
-      metodo_pago,
-      datos_pago,
-    }),
+    body: JSON.stringify({ items, tipo_entrega, direccion_entrega, codigo_cupon }),
   });
   return parseOrThrow(res);
 }

@@ -34,8 +34,6 @@ export type EstadoPedido =
   | "en_camino"
   | "entregado";
 
-export type MetodoPago = "tarjeta" | "transferencia" | "efectivo";
-
 export interface ItemPedido {
   id: number;
   producto: number;
@@ -61,10 +59,6 @@ export interface Pedido {
   // Totales y descuentos
   descuento_aplicado: number;
   total_final: number;
-  // Pago (Strategy de métodos de pago)
-  metodo_pago: MetodoPago | null;
-  estado_pago: "aprobado" | "rechazado" | null;
-  referencia_pago: string | null;
   // Confirmación y calificación del cliente
   confirmado_cliente: boolean;
   calificacion_repartidor: number | null;
@@ -91,11 +85,4 @@ export interface LoginResponse {
 export interface MensajeResponse {
   mensaje?: string;
   error?: string;
-}
-
-export interface DatosPago {
-  numero_tarjeta?: string;
-  nombre_titular?: string;
-  vencimiento?: string;
-  cvv?: string;
 }

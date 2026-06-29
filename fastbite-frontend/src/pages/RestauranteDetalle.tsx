@@ -135,10 +135,6 @@ export default function RestauranteDetalle() {
                   }}
                 />
               )}
-<<<<<<< Updated upstream
-              <div className="info">
-                <h4>{p.nombre}</h4>
-=======
               <div className="info" style={{ flex: 1 }}>
                 <h4 style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                   {p.nombre}
@@ -152,7 +148,6 @@ export default function RestauranteDetalle() {
                     size="sm"
                   />
                 </h4>
->>>>>>> Stashed changes
                 <p>{p.descripcion}</p>
               </div>
               <span className="price">${p.precio.toLocaleString("es-CL")}</span>
