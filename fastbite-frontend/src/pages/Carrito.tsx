@@ -33,6 +33,18 @@ export default function Carrito() {
   const descuento = cuponAplicado ? Math.round((subtotal + costoEnvio) * (cuponPorcentaje / 100)) : 0;
   const totalFinal = subtotal + costoEnvio - descuento;
 
+useEffect(() => {
+  if (!direccion) {
+    const raw = localStorage.getItem("fastbite_perfil");
+    if (raw) {
+      try {
+        const perfil = JSON.parse(raw);
+        if (perfil.direccionGuardada) setDireccion(perfil.direccionGuardada);
+      } catch {}
+    }
+  }
+}, []);
+
   async function aplicarCupon() {
     if (!codigoCupon.trim()) return;
     setCuponEstado("cargando");

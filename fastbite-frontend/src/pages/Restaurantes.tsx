@@ -1,8 +1,15 @@
+// Cambia respecto al original:
+// 1. Importa useFavoriteRestaurantes y FavButton
+// 2. Agrega el botón ♡/♥ en cada tarjeta
+// 3. Agrega una sección "Tus favoritos" arriba del listado completo
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as api from "../api/client";
 import type { Restaurante } from "../types";
 import { useAuth } from "../context/AuthContext";
+import { useFavoriteRestaurantes } from "../hooks/useFavorites";
+import FavButton from "../components/FavButton";
 
 const CATEGORIA_EMOJI: Record<string, string> = {
   Hamburguesas: "🍔",
@@ -23,6 +30,7 @@ export default function Restaurantes() {
   const [error, setError] = useState<string | null>(null);
   const [heroVisible, setHeroVisible] = useState(false);
   const { usuario, rol } = useAuth();
+  const { isFav, toggle } = useFavoriteRestaurantes();
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 30);
@@ -34,8 +42,11 @@ export default function Restaurantes() {
     return () => clearTimeout(t);
   }, []);
 
+  const favoritos = restaurantes.filter((r) => isFav(r.id));
+
   return (
     <div className="page">
+<<<<<<< Updated upstream
       <div className={`hero-intro ${heroVisible ? "hero-visible" : ""}`}>
         <h1 className="page-title">¿Qué quieres comer hoy?</h1>
         <p className="page-subtitle">Elige tu restaurante y haz tu pedido</p>
@@ -52,6 +63,22 @@ export default function Restaurantes() {
                 {rol === "repartidor" && "Revisa los pedidos disponibles para entregar."}
                 {rol === "admin" && "Panel de administración activo."}
               </div>
+=======
+      <h1 className="page-title">¿Qué quieres comer hoy?</h1>
+      <p className="page-subtitle">Elige tu restaurante y haz tu pedido</p>
+
+      {usuario && (
+        <div className={`dashboard-banner ${rol ?? ""}`}>
+          <span className="banner-emoji">
+            {rol === "repartidor" ? "🛵" : rol === "admin" ? "⚙️" : "👋"}
+          </span>
+          <div className="banner-content">
+            <strong className="banner-title">Hola, {usuario}</strong>
+            <div className="banner-subtitle">
+              {rol === "cliente" && "¿Qué se te antoja hoy?"}
+              {rol === "repartidor" && "Revisa los pedidos disponibles para entregar."}
+              {rol === "admin" && "Panel de administración activo."}
+>>>>>>> Stashed changes
             </div>
           </div>
         )}
@@ -73,11 +100,23 @@ export default function Restaurantes() {
       {error && <p className="form-error">{error}</p>}
 
       {!cargando && !error && restaurantes.length === 0 && (
-        <div className="empty-state">
-          Todavía no hay restaurantes cargados.
-        </div>
+        <div className="empty-state">Todavía no hay restaurantes cargados.</div>
       )}
 
+      {/* ── Sección de favoritos ── */}
+      {favoritos.length > 0 && (
+        <>
+          <p className="product-section-title">❤️ Tus favoritos</p>
+          <div className="card-grid" style={{ marginBottom: "2rem" }}>
+            {favoritos.map((r) => (
+              <RestauranteCard key={r.id} r={r} isFav={true} onToggleFav={() => toggle(r.id)} />
+            ))}
+          </div>
+          <p className="product-section-title">🍽️ Todos los restaurantes</p>
+        </>
+      )}
+
+<<<<<<< Updated upstream
       {!cargando && !error && restaurantes.length > 0 && (
         <div className="card-grid">
           {restaurantes.map((r, i) => (
@@ -101,6 +140,61 @@ export default function Restaurantes() {
           ))}
         </div>
       )}
+=======
+      <div className="card-grid">
+        {restaurantes.map((r) => (
+          <RestauranteCard key={r.id} r={r} isFav={isFav(r.id)} onToggleFav={() => toggle(r.id)} />
+        ))}
+      </div>
+>>>>>>> Stashed changes
+    </div>
+  );
+}
+
+// ─── Subcomponente tarjeta de restaurante ─────────────────────────────────────
+
+function RestauranteCard({
+  r,
+  isFav,
+  onToggleFav,
+}: {
+  r: Restaurante;
+  isFav: boolean;
+  onToggleFav: () => void;
+}) {
+  return (
+    <div style={{ position: "relative" }}>
+      <Link to={`/restaurantes/${r.id}`} className="card">
+        <div className="card-emoji">
+          {(CATEGORIA_EMOJI[r.categoria] as string | undefined) ?? "🍽️"}
+        </div>
+        <span className="eyebrow">{r.categoria}</span>
+        <h3>{r.nombre}</h3>
+        <p>{r.descripcion}</p>
+        <div className="card-footer">
+          <span className="meta">🕐 {r.horario}</span>
+          <span className="delivery-badge">🛵 {r.tiempo_entrega}</span>
+        </div>
+      </Link>
+      {/* El botón va fuera del <Link> para evitar navegación al hacer clic */}
+      <div
+        style={{
+          position: "absolute",
+          top: "0.8rem",
+          right: "0.8rem",
+          zIndex: 10,
+          background: "rgba(255,255,255,0.9)",
+          borderRadius: "50%",
+          width: 34,
+          height: 34,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+        }}
+      >
+        <FavButton isFav={isFav} onToggle={onToggleFav} size="sm" />
+      </div>
     </div>
   );
 }

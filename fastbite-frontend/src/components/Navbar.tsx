@@ -44,6 +44,7 @@ export default function Navbar() {
       )}
         {isAuthenticated ? (
           <>
+            {rol === "cliente" && <Link to="/perfil">Mi perfil</Link>}
             <span className="role-tag">
               {usuario} · {rol}
             </span>

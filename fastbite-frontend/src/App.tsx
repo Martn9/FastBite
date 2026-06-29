@@ -11,6 +11,7 @@ import PedidosDisponibles from "./pages/PedidosDisponibles";
 import PedidosEnCurso from "./pages/PedidosEnCurso";
 import MisPedidos from "./pages/MisPedidos";
 import Rechazados from "./pages/Rechazados";
+import Perfil from "./pages/Perfil";
 import RestaurantePanel from "./pages/RestaurantePanel";
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/mis-pedidos" element={<MisPedidos />} />
         <Route path="/rechazados" element={<Rechazados />} />
         <Route path="/restaurante" element={<RestaurantePanel />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route path="/pedidos/:id" element={<Pedido />} />
       </Routes>
     </div>

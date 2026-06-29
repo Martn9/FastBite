@@ -1,8 +1,14 @@
+// 1. Botón ♡/♥ en cada producto
+// 2. Pasa la dirección guardada del perfil al CartContext no existe aún,
+//    pero sí la exponemos como prop al Carrito via localStorage
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as api from "../api/client";
 import type { Producto } from "../types";
 import { useCart } from "../context/CartContext";
+import { useFavoriteProductos } from "../hooks/useFavorites";
+import FavButton from "../components/FavButton";
 
 // Detecta si una promo trae descuento explícito ("Antes $X" + "N% OFF")
 // para mostrar el badge y el precio tachado; si no, es un combo a precio fijo.
@@ -25,6 +31,7 @@ export default function RestauranteDetalle() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { agregar } = useCart();
+  const { isFav, toggle } = useFavoriteProductos();
 
   useEffect(() => {
     if (!id) return;
@@ -128,8 +135,24 @@ export default function RestauranteDetalle() {
                   }}
                 />
               )}
+<<<<<<< Updated upstream
               <div className="info">
                 <h4>{p.nombre}</h4>
+=======
+              <div className="info" style={{ flex: 1 }}>
+                <h4 style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  {p.nombre}
+                  {categoria === "Promociones" && (
+                    <span className="promo-badge">promo</span>
+                  )}
+                  {/* Botón de favorito inline junto al nombre */}
+                  <FavButton
+                    isFav={isFav(p.id)}
+                    onToggle={() => toggle(p.id)}
+                    size="sm"
+                  />
+                </h4>
+>>>>>>> Stashed changes
                 <p>{p.descripcion}</p>
               </div>
               <span className="price">${p.precio.toLocaleString("es-CL")}</span>
