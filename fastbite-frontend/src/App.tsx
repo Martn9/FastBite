@@ -18,6 +18,7 @@ export default function App() {
   const location = useLocation();
 
   const isRestaurantUser = rol === "restaurante";
+  const isRepartidor = rol === "repartidor";
 
   return (
     <div className="app-shell">
@@ -25,10 +26,24 @@ export default function App() {
       <Routes>
         <Route
           path="/"
-          element={isRestaurantUser ? <Navigate to="/restaurante" replace /> : <Restaurantes />}
+          element={
+            isRestaurantUser ? (
+              <Navigate to="/restaurante" replace />
+            ) : isRepartidor ? (
+              <Navigate to="/pedidos" replace />
+            ) : (
+              <Restaurantes />
+            )
+          }
         />
-        <Route path="/restaurantes/:id" element={<RestauranteDetalle />} />
-        <Route path="/carrito" element={<Carrito />} />
+        <Route
+          path="/restaurantes/:id"
+          element={isRepartidor ? <Navigate to="/pedidos" replace /> : <RestauranteDetalle />}
+        />
+        <Route
+          path="/carrito"
+          element={isRepartidor ? <Navigate to="/pedidos" replace /> : <Carrito />}
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/pedidos" element={<PedidosDisponibles />} />

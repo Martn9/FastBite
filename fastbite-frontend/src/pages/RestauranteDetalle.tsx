@@ -4,6 +4,21 @@ import * as api from "../api/client";
 import type { Producto } from "../types";
 import { useCart } from "../context/CartContext";
 
+// Detecta si una promo trae descuento explícito ("Antes $X" + "N% OFF")
+// para mostrar el badge y el precio tachado; si no, es un combo a precio fijo.
+function parseDescuento(p: Producto) {
+  const texto = `${p.nombre} ${p.descripcion}`;
+  const porcentajeMatch = texto.match(/(\d+)\s*%\s*(OFF|de descuento|dcto)/i);
+  const antesMatch = p.descripcion.match(/Antes\s*\$?\s*([\d.,]+)/i);
+  const precioOriginal = antesMatch
+    ? Number(antesMatch[1].replace(/\./g, "").replace(",", "."))
+    : undefined;
+  return {
+    porcentaje: porcentajeMatch ? Number(porcentajeMatch[1]) : undefined,
+    precioOriginal,
+  };
+}
+
 export default function RestauranteDetalle() {
   const { id } = useParams<{ id: string }>();
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -20,17 +35,16 @@ export default function RestauranteDetalle() {
       .finally(() => setCargando(false));
   }, [id]);
 
-  const categorias = productos.reduce<Record<string, Producto[]>>((acc, p) => {
+  const promos = productos.filter((p) => p.categoria === "Promociones");
+  const resto = productos.filter((p) => p.categoria !== "Promociones");
+
+  const categorias = resto.reduce<Record<string, Producto[]>>((acc, p) => {
     if (!acc[p.categoria]) acc[p.categoria] = [];
     acc[p.categoria].push(p);
     return acc;
   }, {});
 
-  const ordenCategorias = Object.keys(categorias).sort((a, b) => {
-    if (a === "Promociones") return -1;
-    if (b === "Promociones") return 1;
-    return a.localeCompare(b);
-  });
+  const ordenCategorias = Object.keys(categorias).sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="page">
@@ -46,16 +60,64 @@ export default function RestauranteDetalle() {
         </div>
       )}
 
+      {promos.length > 0 && (
+        <div className="promo-section">
+          <p className="product-section-title">🔥 Promociones</p>
+          <div className="promo-carousel">
+            {promos.map((p, i) => {
+              const { porcentaje, precioOriginal } = parseDescuento(p);
+              return (
+                <div
+                  className="promo-card card-enter"
+                  key={p.id}
+                  style={{ animationDelay: `${i * 0.07}s` }}
+                >
+                  {porcentaje && (
+                    <span className="promo-discount-badge">-{porcentaje}%</span>
+                  )}
+                  {p.imagen_url && (
+                    <img
+                      src={p.imagen_url}
+                      alt={p.nombre}
+                      className="promo-card-img"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  )}
+                  <div className="promo-card-body">
+                    <h4>{p.nombre}</h4>
+                    <p>{p.descripcion}</p>
+                    <div className="promo-card-footer">
+                      <div className="promo-price-group">
+                        {precioOriginal && (
+                          <span className="promo-price-original">
+                            ${precioOriginal.toLocaleString("es-CL")}
+                          </span>
+                        )}
+                        <span className="price">${p.precio.toLocaleString("es-CL")}</span>
+                      </div>
+                      <button
+                        className="btn"
+                        disabled={!p.disponible}
+                        onClick={() => agregar(p)}
+                      >
+                        {p.disponible ? "Agregar" : "Sin stock"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {ordenCategorias.map((categoria) => (
         <div key={categoria}>
-          <p className="product-section-title">
-            {categoria === "Promociones" ? "🔥 " : ""}{categoria}
-          </p>
+          <p className="product-section-title">{categoria}</p>
           {categorias[categoria].map((p) => (
-            <div
-              className={`product-row ${categoria === "Promociones" ? "promo-row" : ""}`}
-              key={p.id}
-            >
+            <div className="product-row" key={p.id}>
               {p.imagen_url && (
                 <img
                   src={p.imagen_url}
@@ -67,12 +129,7 @@ export default function RestauranteDetalle() {
                 />
               )}
               <div className="info">
-                <h4>
-                  {p.nombre}
-                  {categoria === "Promociones" && (
-                    <span className="promo-badge">promo</span>
-                  )}
-                </h4>
+                <h4>{p.nombre}</h4>
                 <p>{p.descripcion}</p>
               </div>
               <span className="price">${p.precio.toLocaleString("es-CL")}</span>

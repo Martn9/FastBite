@@ -22,9 +22,9 @@ export default function Navbar() {
       <nav>
         {rol === "restaurante" ? (
         <Link to="/restaurante">Mi panel</Link>
-      ) : (
+      ) : rol !== "repartidor" ? (
         <Link to="/">Restaurantes</Link>
-      )}
+      ) : null}
       {rol === "repartidor" && (
         <>
           <Link to="/pedidos">Disponibles</Link>
