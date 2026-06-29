@@ -63,14 +63,24 @@ def _con_pin(pedido, request):
 
 @router.post("/pedidos", response=PedidoSchema, auth=jwt_auth)
 def crear_pedido(request, data: CrearPedidoSchema):
-    """Crea un nuevo pedido con sus items y tipo de entrega."""
+    """
+    Crea un nuevo pedido con sus items, tipo de entrega y método de pago.
+
+    El pago se procesa mediante el patrón Strategy (ver
+    pedidos/patterns/strategies/pago_strategy.py) ANTES de crear el
+    pedido: si el pago es rechazado, no se crea ningún registro.
+    """
     items = [item.dict() for item in data.items]
+    datos_pago = data.datos_pago.dict() if data.datos_pago else None
+
     pedido = services.crear_pedido(
         request.auth,
         items,
         tipo_entrega=data.tipo_entrega,
         direccion_entrega=data.direccion_entrega,
         codigo_cupon=data.codigo_cupon,
+        metodo_pago=data.metodo_pago,
+        datos_pago=datos_pago,
     )
     # El cliente siempre ve su propio PIN al crear el pedido
     return pedido

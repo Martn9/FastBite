@@ -123,3 +123,34 @@ class ItemPedido(models.Model):
 
     def __str__(self):
         return f"{self.cantidad}x {self.producto.nombre}"
+
+
+class Pago(models.Model):
+    """
+    Registro del pago asociado a un pedido. Es un simulador con fines
+    académicos: no almacena datos sensibles de tarjetas (número completo,
+    CVV, fecha de vencimiento), solo el resultado del procesamiento
+    (patrón Strategy, ver pedidos/patterns/strategies/pago_strategy.py).
+    """
+
+    METODOS = [
+        ("tarjeta", "Tarjeta"),
+        ("transferencia", "Transferencia"),
+        ("efectivo", "Efectivo al recibir"),
+    ]
+
+    ESTADOS_PAGO = [
+        ("aprobado", "Aprobado"),
+        ("rechazado", "Rechazado"),
+    ]
+
+    pedido = models.OneToOneField(Pedido, on_delete=models.CASCADE, related_name="pago")
+    metodo = models.CharField(max_length=20, choices=METODOS)
+    estado = models.CharField(max_length=20, choices=ESTADOS_PAGO, default="aprobado")
+    monto = models.IntegerField()
+    mensaje = models.CharField(max_length=255, blank=True, default="")
+    referencia = models.CharField(max_length=20, blank=True, default="")
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Pago #{self.id} - Pedido #{self.pedido_id} - {self.metodo} - {self.estado}"

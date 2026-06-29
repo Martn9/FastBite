@@ -40,6 +40,11 @@ class PedidoSchema(Schema):
     descuento_aplicado: int
     total_final: int
 
+    # Pago (Strategy de métodos de pago)
+    metodo_pago: Optional[str] = None
+    estado_pago: Optional[str] = None
+    referencia_pago: Optional[str] = None
+
     # Confirmación y calificación del cliente
     confirmado_cliente: bool
     calificacion_repartidor: Optional[int] = None
@@ -76,10 +81,38 @@ class PedidoSchema(Schema):
     def resolve_cancelado_razon(obj):
         return obj.cancelado_razon or None
 
+    @staticmethod
+    def resolve_metodo_pago(obj):
+        pago = getattr(obj, "pago", None)
+        return pago.metodo if pago else None
+
+    @staticmethod
+    def resolve_estado_pago(obj):
+        pago = getattr(obj, "pago", None)
+        return pago.estado if pago else None
+
+    @staticmethod
+    def resolve_referencia_pago(obj):
+        pago = getattr(obj, "pago", None)
+        return pago.referencia if pago else None
+
 
 class CrearItemSchema(Schema):
     producto_id: int
     cantidad: int
+
+
+class DatosPagoSchema(Schema):
+    """
+    Datos del formulario de pago. Se usan solo para la simulación
+    (ver pedidos/patterns/strategies/pago_strategy.py) y nunca se
+    almacenan en la base de datos.
+    """
+
+    numero_tarjeta: Optional[str] = None
+    nombre_titular: Optional[str] = None
+    vencimiento: Optional[str] = None
+    cvv: Optional[str] = None
 
 
 class CrearPedidoSchema(Schema):
@@ -87,6 +120,8 @@ class CrearPedidoSchema(Schema):
     tipo_entrega: str = "delivery"
     direccion_entrega: Optional[str] = None
     codigo_cupon: Optional[str] = None
+    metodo_pago: str = "efectivo"
+    datos_pago: Optional[DatosPagoSchema] = None
 
 
 class ConfirmarEntregaRepartidorSchema(Schema):
