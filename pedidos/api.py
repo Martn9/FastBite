@@ -37,18 +37,27 @@ def validar_cupon(request, data: ValidarCuponSchema):
 
 def _con_pin(pedido, request):
     """
-    Devuelve el pedido tal cual; el PIN solo se incluye si el usuario autenticado
-    es el cliente dueño del pedido. Para el repartidor y admin se omite.
+    Decide si el PIN se incluye en la respuesta según el rol y tipo de pedido:
+
+    - Cliente dueño del pedido: SIEMPRE ve el PIN (delivery y retiro),
+      para que pueda mostrárselo al repartidor o al restaurante.
+    - Restaurante: ve el PIN solo si el pedido es de retiro y pertenece
+      a su restaurante, para poder validar el retiro del cliente.
+    - Cualquier otro caso (repartidor, admin, otro cliente): PIN oculto.
     """
     usuario = request.auth
     rol = getattr(getattr(usuario, "perfil", None), "rol", None)
-    # No mostramos PIN para pedidos de tipo 'retiro' en ningún caso.
-    if pedido.tipo_entrega == "retiro":
-        pedido.pin_entrega = None
+
+    # El cliente dueño siempre ve su PIN
+    if rol == "cliente" and pedido.cliente_id == usuario.id:
         return pedido
 
-    if rol != "cliente" or pedido.cliente_id != usuario.id:
-        pedido.pin_entrega = None
+    # El restaurante ve el PIN solo en pedidos de retiro
+    if rol == "restaurante" and pedido.tipo_entrega == "retiro":
+        return pedido
+
+    # Todos los demás roles no ven el PIN
+    pedido.pin_entrega = None
     return pedido
 
 
@@ -81,7 +90,7 @@ def listar_pedidos(request):
 def listar_disponibles(request):
     """Solo repartidor: pedidos sin asignar que este repartidor no haya rechazado."""
     pedidos = services.listar_disponibles(request.auth)
-    # El repartidor NO ve el PIN en la lista (solo lo ingresa in situ)
+    # El repartidor NO ve el PIN en la lista
     for p in pedidos:
         p.pin_entrega = None
     return list(pedidos)
@@ -107,7 +116,6 @@ def listar_rechazados(request):
 def listar_en_curso(request):
     """Solo repartidor: pedidos asignados que están en curso (no entregados)."""
     pedidos = services.listar_en_curso(request.auth)
-    # El repartidor no debe ver el PIN en la lista
     for p in pedidos:
         p.pin_entrega = None
     return list(pedidos)
@@ -135,8 +143,7 @@ def listar_entregados(request):
 
 @router.get("/pedidos/{pedido_id}", response=PedidoSchema, auth=jwt_auth)
 def obtener_pedido(request, pedido_id: int):
-    """Obtiene el estado actual de un pedido. El PIN solo se devuelve al cliente."""
-    # Usar la función centralizada de acceso que aplica validaciones por rol.
+    """Obtiene el estado actual de un pedido. El PIN solo se devuelve al cliente y al restaurante en retiros."""
     pedido = services.obtener_pedido(pedido_id, request.auth, purpose="view")
     return _con_pin(pedido, request)
 
@@ -189,13 +196,10 @@ def confirmar_recepcion(request, pedido_id: int, data: CalificarPedidoSchema):
 
 @router.post("/pedidos/{pedido_id}/retirar", response=PedidoSchema, auth=jwt_auth)
 def retirar_pedido(request, pedido_id: int, data: ConfirmarRetiroSchema):
-    """El cliente (o restaurante) marca un pedido de tipo 'retiro' como retirado.
-    El restaurante debe ingresar el PIN para confirmar el retiro; el cliente
-    puede marcarlo sin PIN desde su vista.
-    """
+    """El restaurante confirma el retiro ingresando el PIN del cliente."""
     pedido = services.confirmar_retiro(pedido_id, request.auth, pin=data.pin)
     pedido.pin_entrega = None
-    return _con_pin(pedido, request)
+    return pedido
 
 
 @router.post("/pedidos/{pedido_id}/cancelar", response=PedidoSchema, auth=jwt_auth)

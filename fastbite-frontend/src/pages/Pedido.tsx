@@ -6,8 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import type { Pedido as PedidoType, EstadoPedido } from "../types";
 
 // ─── Configuración de etapas (dinámica según tipo_entrega) ────────────────
-// Generamos las etapas en función de `pedido.tipo_entrega`. Esto permite
-// mantener dos flujos distintos sin duplicar vistas: delivery y retiro.
 function getEtapas(tipo_entrega: string) {
   if (tipo_entrega === "retiro") {
     return [
@@ -18,7 +16,6 @@ function getEtapas(tipo_entrega: string) {
     ];
   }
 
-  // Flujo por defecto (delivery)
   return [
     { clave: "pendiente", etiqueta: "Pedido recibido", emoji: "🧾" },
     { clave: "preparando", etiqueta: "En preparación", emoji: "👨‍🍳" },
@@ -32,7 +29,7 @@ const LABEL_AVANZAR: Record<string, string> = {
   preparando: "Marcar siguiente etapa →",
   listo_despacho: "Esperando repartidor",
   listo_retiro: "Marcar como retirado →",
-  en_camino: "", // el avance a 'entregado' usa el flujo de PIN
+  en_camino: "",
   entregado: "",
   retirado: "",
 };
@@ -67,16 +64,15 @@ function StarRating({
 }
 
 // ─── Subcomponente: PIN del cliente ───────────────────────────────────────────
+// Recibe un mensaje distinto según si es delivery o retiro en tienda.
 
-function PinEntrega({ pin }: { pin: string }) {
+function PinEntrega({ pin, mensaje }: { pin: string; mensaje: string }) {
   const [visible, setVisible] = useState(false);
 
   return (
     <div className="pin-card">
       <p className="pin-titulo">🔐 Tu PIN de entrega</p>
-      <p className="pin-descripcion">
-        Cuando el repartidor llegue, dile este código para confirmar que recibiste tu pedido.
-      </p>
+      <p className="pin-descripcion">{mensaje}</p>
       <div className="pin-display">
         {visible ? (
           <span className="pin-digits">{pin}</span>
@@ -185,12 +181,9 @@ export default function Pedido() {
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [errorPin, setErrorPin] = useState<string | null>(null);
   const [cargandoPin, setCargandoPin] = useState(false);
-  // Retiro PIN (restaurante confirma retiro con PIN)
   const [pinRetiro, setPinRetiro] = useState("");
   const [errorPinRetiro, setErrorPinRetiro] = useState<string | null>(null);
   const [cargandoPinRetiro, setCargandoPinRetiro] = useState(false);
-
-  // Confirmación del cliente
   const [calificacion, setCalificacion] = useState(5);
   const [confirmando, setConfirmando] = useState(false);
   const [errorConfirmar, setErrorConfirmar] = useState<string | null>(null);
@@ -339,41 +332,55 @@ export default function Pedido() {
   const etapas = getEtapas(pedido.tipo_entrega);
   const indiceActual = etapas.findIndex((e) => e.clave === pedido.estado);
   const esEntregado  = pedido.estado === "entregado";
+  const esRetirado   = pedido.estado === "retirado";
   const esEnCamino   = pedido.estado === "en_camino";
 
   const esRepartidorAsignado =
     rol === "repartidor" && pedido.repartidor === usuario;
-  const esPedidoPropio = rol === "repartidor" && pedido.cliente === usuario;
 
-  // "Avanzar" solo aplica para pendiente→preparando y preparando→en_camino
   const puedeTomar =
     rol === "repartidor" &&
     pedido.repartidor === null &&
     !esEntregado &&
-    !esPedidoPropio &&
+    pedido.cliente !== usuario &&
     pedido.tipo_entrega !== "retiro";
 
   const puedeAvanzar =
     !esEntregado &&
+    !esRetirado &&
     !esEnCamino &&
     (rol === "admin" || rol === "restaurante") &&
     (pedido.estado === "pendiente" || pedido.estado === "preparando");
 
-  // El formulario de PIN aparece cuando el repartidor llega al último paso
   const puedeIngresarPin =
     esEnCamino && (rol === "admin" || esRepartidorAsignado);
 
-  // El cliente ve su PIN mientras el pedido no está entregado
+  // El cliente ve el PIN mientras el pedido no esté completado ni cancelado,
+  // tanto para delivery (hasta entregado) como para retiro (hasta retirado).
   const verPin =
     rol === "cliente" &&
     pedido.cliente === usuario &&
     pedido.pin_entrega !== null &&
-    !esEntregado;
+    pedido.pin_entrega !== "" &&
+    !esEntregado &&
+    !esRetirado;
+
+  // El restaurante ve el formulario de PIN cuando el pedido de retiro está listo
+  const restaurantePuedeConfirmarRetiro =
+    rol === "restaurante" &&
+    pedido.tipo_entrega === "retiro" &&
+    pedido.estado === "listo_retiro";
 
   const puedeConfirmar =
     rol === "cliente" && esEntregado && !pedido.confirmado_cliente;
 
   const yaConfirmo = rol === "cliente" && pedido.confirmado_cliente;
+
+  // Mensaje del PIN según el tipo de entrega
+  const mensajePin =
+    pedido.tipo_entrega === "retiro"
+      ? "Muéstrale este código al restaurante cuando vayas a retirar tu pedido."
+      : "Cuando el repartidor llegue, dile este código para confirmar que recibiste tu pedido.";
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -497,7 +504,7 @@ export default function Pedido() {
           </button>
         )}
 
-        {/* Avanzar estado (excepto el último paso) */}
+        {/* Avanzar estado */}
         {puedeAvanzar && (
           <button
             className="btn btn-block accion-btn"
@@ -508,12 +515,13 @@ export default function Pedido() {
           </button>
         )}
 
-        {/* ── PIN del cliente (visible solo para el cliente dueño) ──────── */}
+        {/* ── PIN del cliente ───────────────────────────────────────────── */}
+        {/* Se muestra tanto en delivery (hasta entregado) como en retiro (hasta retirado) */}
         {verPin && pedido.pin_entrega && (
-          <PinEntrega pin={pedido.pin_entrega} />
+          <PinEntrega pin={pedido.pin_entrega} mensaje={mensajePin} />
         )}
 
-        {/* ── Formulario de PIN para el repartidor ─────────────────────── */}
+        {/* ── Formulario de PIN para el repartidor (delivery) ──────────── */}
         {puedeIngresarPin && (
           <FormularioPinRepartidor
             onConfirmar={handleEntregarConPin}
@@ -522,27 +530,40 @@ export default function Pedido() {
           />
         )}
 
-        {/* ── Formulario PIN para retiro (restaurante) ─────────────────── */}
-        {rol === "restaurante" && pedido.tipo_entrega === "retiro" && pedido.estado === "listo_retiro" && (
-          <div className="pin-card pin-card--restaurante">
+        {/* ── Formulario PIN para retiro (cuenta del restaurante) ──────── */}
+        {restaurantePuedeConfirmarRetiro && (
+          <div className="pin-card pin-card--repartidor">
             <p className="pin-titulo">🔐 Confirmar retiro con PIN</p>
-            <p className="pin-descripcion">Ingresa el PIN que te dio el cliente para confirmar que retiró su pedido.</p>
-            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+            <p className="pin-descripcion">
+              Pídele al cliente su PIN de 4 dígitos e ingrésalo para confirmar que retiró su pedido.
+            </p>
+            <div className="pin-input-row">
               <input
                 className="pin-input"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                placeholder="0000"
                 value={pinRetiro}
                 onChange={(e) => setPinRetiro(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                placeholder="0000"
+                onKeyDown={(e) => e.key === "Enter" && handleConfirmarRetiro()}
               />
-              <button className="btn" disabled={cargandoPinRetiro || pinRetiro.length !== 4} onClick={handleConfirmarRetiro}>
-                {cargandoPinRetiro ? "Confirmando..." : "Confirmar retiro"}
+              <button
+                className="btn"
+                disabled={cargandoPinRetiro || pinRetiro.length !== 4}
+                onClick={handleConfirmarRetiro}
+              >
+                {cargandoPinRetiro ? "Confirmando..." : "Confirmar retiro ✓"}
               </button>
             </div>
-            {errorPinRetiro && <p className="form-error" style={{ marginTop: "0.6rem" }}>{errorPinRetiro}</p>}
+            {errorPinRetiro && (
+              <p className="form-error" style={{ marginTop: "0.6rem" }}>{errorPinRetiro}</p>
+            )}
           </div>
         )}
 
-        {/* ── Confirmación del cliente ──────────────────────────────────── */}
+        {/* ── Confirmación del cliente (solo delivery) ──────────────────── */}
         {puedeConfirmar && (
           <div className="confirmacion-card">
             <p className="confirmacion-titulo">¿Recibiste tu pedido? 🎉</p>
@@ -580,8 +601,10 @@ export default function Pedido() {
           </div>
         )}
 
-        {/* ── Calificar Restaurante (cliente) ───────────────────────────── */}
-        {rol === "cliente" && (pedido.estado === "entregado" || pedido.estado === "retirado") && pedido.calificacion_restaurante == null && (
+        {/* ── Calificar Restaurante ─────────────────────────────────────── */}
+        {rol === "cliente" &&
+          (pedido.estado === "entregado" || pedido.estado === "retirado") &&
+          pedido.calificacion_restaurante == null && (
           <div className="confirmacion-card" style={{ marginTop: "1rem" }}>
             <p className="confirmacion-titulo">¿Cómo estuvo el restaurante?</p>
             <StarRating value={calificacion} onChange={setCalificacion} />
@@ -595,8 +618,9 @@ export default function Pedido() {
           </div>
         )}
 
-        {/* ── Cancelar pedido (cliente o restaurante) ───────────────────── */}
-        {(rol === "cliente" && pedido.cliente === usuario || rol === "restaurante") && !["entregado", "retirado", "cancelado"].includes(pedido.estado) && (
+        {/* ── Cancelar pedido ───────────────────────────────────────────── */}
+        {(rol === "cliente" && pedido.cliente === usuario || rol === "restaurante") &&
+          !["entregado", "retirado", "cancelado"].includes(pedido.estado) && (
           <div style={{ marginTop: "1rem" }}>
             <button className="btn-ghost" onClick={handleCancelar}>Cancelar pedido</button>
           </div>
