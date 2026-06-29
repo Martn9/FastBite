@@ -46,9 +46,13 @@ jobs:
         name: coverage-report
         path: coverage.xml
 
-    # Desactivado temporalmente por mantenimiento del servidor UCT
-    # - name: Análisis de calidad con SonarQube
-    #   uses: sonarsource/sonarqube-scan-action@v4
-    #   env:
-    #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    - name: Análisis de calidad con SonarQube
+      uses: sonarsource/sonarqube-scan-action@v4
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      with:
+        args: >
+          -Dsonar.projectKey=INFO1156-GTM
+          -Dsonar.python.coverage.reportPaths=coverage.xml
+          -Dsonar.exclusions=**/migrations/**,manage.py,**/settings*,**/tests/**,**/__init__.py,venv/**,env/**
