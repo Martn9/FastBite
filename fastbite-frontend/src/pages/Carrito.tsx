@@ -4,7 +4,13 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../api/client";
 import { ApiError } from "../api/client";
-import type { Restaurante } from "../types";
+import type { Restaurante, MetodoPago } from "../types";
+
+const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
+  tarjeta: "💳 Tarjeta",
+  transferencia: "🏦 Transferencia",
+  efectivo: "💵 Efectivo al recibir",
+};
 
 export default function Carrito() {
   const { items, agregar, quitar, vaciar, total, restauranteId } = useCart();
@@ -18,6 +24,13 @@ export default function Carrito() {
   // Tipo de entrega
   const [tipoEntrega, setTipoEntrega] = useState<"delivery" | "retiro">("delivery");
   const [direccion, setDireccion] = useState("");
+
+  // Método de pago
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>("efectivo");
+  const [numeroTarjeta, setNumeroTarjeta] = useState("");
+  const [nombreTitular, setNombreTitular] = useState("");
+  const [vencimiento, setVencimiento] = useState("");
+  const [cvv, setCvv] = useState("");
 
   // Cupón
   const [codigoCupon, setCodigoCupon] = useState("");
@@ -100,6 +113,18 @@ export default function Carrito() {
       return;
     }
 
+    if (metodoPago === "tarjeta") {
+      if (
+        numeroTarjeta.replace(/\s/g, "").length < 12 ||
+        !nombreTitular.trim() ||
+        vencimiento.trim().length < 4 ||
+        cvv.trim().length < 3
+      ) {
+        setError("Completa todos los datos de la tarjeta para continuar.");
+        return;
+      }
+    }
+
     setCargando(true);
     try {
       const pedido = await api.crearPedido(
@@ -110,6 +135,15 @@ export default function Carrito() {
         tipoEntrega,
         tipoEntrega === "delivery" ? direccion.trim() : undefined,
         cuponAplicado ? codigoCupon.trim().toUpperCase() : undefined,
+        metodoPago,
+        metodoPago === "tarjeta"
+          ? {
+              numero_tarjeta: numeroTarjeta.replace(/\s/g, ""),
+              nombre_titular: nombreTitular.trim(),
+              vencimiento: vencimiento.trim(),
+              cvv: cvv.trim(),
+            }
+          : undefined,
       );
       vaciar();
       navigate(`/pedidos/${pedido.id}`);
@@ -244,6 +278,140 @@ export default function Carrito() {
             )}
           </div>
 
+          {/* Método de pago */}
+          <div className="cart-section-card">
+            <div className="cart-section-title">
+              <span className="cart-section-icon">💳</span>
+              <h2>Método de pago</h2>
+            </div>
+
+            <div className="delivery-toggle">
+              <button
+                className={`delivery-option ${metodoPago === "tarjeta" ? "active" : ""}`}
+                onClick={() => setMetodoPago("tarjeta")}
+                id="opt-pago-tarjeta"
+              >
+                <span className="delivery-option-icon">💳</span>
+                <div>
+                  <strong>Tarjeta</strong>
+                  <small>Débito o crédito</small>
+                </div>
+              </button>
+
+              <button
+                className={`delivery-option ${metodoPago === "transferencia" ? "active" : ""}`}
+                onClick={() => setMetodoPago("transferencia")}
+                id="opt-pago-transferencia"
+              >
+                <span className="delivery-option-icon">🏦</span>
+                <div>
+                  <strong>Transferencia</strong>
+                  <small>Confirmación inmediata</small>
+                </div>
+              </button>
+
+              <button
+                className={`delivery-option ${metodoPago === "efectivo" ? "active" : ""}`}
+                onClick={() => setMetodoPago("efectivo")}
+                id="opt-pago-efectivo"
+              >
+                <span className="delivery-option-icon">💵</span>
+                <div>
+                  <strong>Efectivo</strong>
+                  <small>Pagas al recibir o retirar</small>
+                </div>
+              </button>
+            </div>
+
+            {metodoPago === "tarjeta" && (
+              <div className="cart-address-wrap" style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                <div>
+                  <label className="form-label" htmlFor="numero-tarjeta">
+                    Número de tarjeta <span className="required">*</span>
+                  </label>
+                  <input
+                    id="numero-tarjeta"
+                    type="text"
+                    inputMode="numeric"
+                    className="form-input"
+                    placeholder="4242 4242 4242 4242"
+                    maxLength={19}
+                    value={numeroTarjeta}
+                    onChange={(e) => {
+                      const soloDigitos = e.target.value.replace(/\D/g, "").slice(0, 16);
+                      const agrupado = soloDigitos.replace(/(.{4})/g, "$1 ").trim();
+                      setNumeroTarjeta(agrupado);
+                    }}
+                  />
+                  <small className="form-hint" style={{ marginTop: "0.3rem" }}>
+                    Simulación: una tarjeta que termine en 0000 será rechazada.
+                  </small>
+                </div>
+
+                <div>
+                  <label className="form-label" htmlFor="nombre-titular">
+                    Nombre del titular <span className="required">*</span>
+                  </label>
+                  <input
+                    id="nombre-titular"
+                    type="text"
+                    className="form-input"
+                    placeholder="Como aparece en la tarjeta"
+                    value={nombreTitular}
+                    onChange={(e) => setNombreTitular(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ display: "flex", gap: "0.8rem" }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="form-label" htmlFor="vencimiento">
+                      Vencimiento <span className="required">*</span>
+                    </label>
+                    <input
+                      id="vencimiento"
+                      type="text"
+                      className="form-input"
+                      placeholder="MM/AA"
+                      maxLength={5}
+                      value={vencimiento}
+                      onChange={(e) => {
+                        const limpio = e.target.value.replace(/[^\d/]/g, "");
+                        setVencimiento(limpio);
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="form-label" htmlFor="cvv">
+                      CVV <span className="required">*</span>
+                    </label>
+                    <input
+                      id="cvv"
+                      type="text"
+                      inputMode="numeric"
+                      className="form-input"
+                      placeholder="123"
+                      maxLength={4}
+                      value={cvv}
+                      onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {metodoPago === "transferencia" && (
+              <p className="form-hint">
+                Se simulará la confirmación de la transferencia al momento de crear el pedido.
+              </p>
+            )}
+
+            {metodoPago === "efectivo" && (
+              <p className="form-hint">
+                Pagarás en efectivo cuando recibas o retires tu pedido.
+              </p>
+            )}
+          </div>
+
           {/* Cupón de descuento */}
           <div className="cart-section-card">
             <div className="cart-section-title">
@@ -332,6 +500,10 @@ export default function Carrito() {
                   <span>−${descuento.toLocaleString("es-CL")}</span>
                 </div>
               )}
+              <div className="cart-summary-row">
+                <span>Método de pago</span>
+                <span>{METODO_PAGO_LABEL[metodoPago]}</span>
+              </div>
             </div>
 
             <div className="cart-summary-total">

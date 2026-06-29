@@ -34,6 +34,12 @@ const LABEL_AVANZAR: Record<string, string> = {
   retirado: "",
 };
 
+const METODO_PAGO_LABEL: Record<string, string> = {
+  tarjeta: "💳 Tarjeta",
+  transferencia: "🏦 Transferencia",
+  efectivo: "💵 Efectivo al recibir",
+};
+
 // ─── Subcomponente: estrellas de calificación ─────────────────────────────────
 
 function StarRating({
@@ -452,6 +458,26 @@ export default function Pedido() {
             <span className="pedido-info-label">🎟️ Descuento</span>
             <span style={{ color: "#16a34a", fontWeight: 700 }}>
               −${pedido.descuento_aplicado.toLocaleString("es-CL")}
+            </span>
+          </div>
+        )}
+
+        {/* ── NUEVO: Método y estado de pago ───────────────────────────── */}
+        {pedido.metodo_pago && (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">💳 Pago</span>
+            <span>
+              {METODO_PAGO_LABEL[pedido.metodo_pago] ?? pedido.metodo_pago}
+              {pedido.estado_pago === "aprobado" && (
+                <span style={{ color: "#16a34a", fontWeight: 700, marginLeft: "0.5rem" }}>
+                  ✓ Aprobado
+                </span>
+              )}
+              {pedido.estado_pago === "rechazado" && (
+                <span style={{ color: "#dc2626", fontWeight: 700, marginLeft: "0.5rem" }}>
+                  ✗ Rechazado
+                </span>
+              )}
             </span>
           </div>
         )}
