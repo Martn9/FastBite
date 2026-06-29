@@ -55,4 +55,4 @@ jobs:
         args: >
           -Dsonar.projectKey=INFO1156-GTM
           -Dsonar.python.coverage.reportPaths=coverage.xml
-          -Dsonar.exclusions=**/migrations/**,manage.py,**/settings*,**/tests/**,**/__init__.py,venv/**,env/**
+          -Dsonar.exclusions=**/migrations/**,manage.py,**/settings*,**/tests/**,**/__init__.py,venv/**,env/**,core/asgi.py,core/wsgi.py,fastbite-frontend/**,scripts/**,seed*.py
