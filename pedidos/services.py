@@ -4,6 +4,8 @@ from .models import Pedido, ItemPedido
 from catalogo.models import Producto
 from django.shortcuts import get_object_or_404
 
+ERROR_PERMISO = "No tienes permiso para ver este pedido"
+
 
 def crear_pedido(
     cliente, items: list, tipo_entrega: str = "delivery", direccion_entrega: str = None, codigo_cupon: str = None
@@ -309,62 +311,58 @@ def confirmar_entrega_con_pin(pedido_id: int, usuario, pin: str):
 
 
 def confirmar_retiro(pedido_id: int, usuario, pin: str | None = None):
-    """El cliente (o restaurante) marca un pedido de tipo 'retiro' como retirado.
-
-    Reglas:
-    - Cliente dueño: puede marcar como retirado si el pedido está en 'listo_retiro'.
-    - Restaurante: debe estar asociado al restaurante y confirmar con el PIN del pedido.
-    """
     pedido = obtener_pedido(pedido_id, usuario, purpose="view")
 
     if pedido.tipo_entrega != "retiro":
         raise HttpError(400, "Este endpoint es sólo para pedidos de retiro")
+    
+    if pedido.estado != "listo_retiro":
+        raise HttpError(400, "El pedido no está listo para retirar")
 
-    # El cliente dueño puede marcar como retirado sin PIN
+    rol = _rol(usuario)
+
+    # 1. Caso Cliente dueño
     if pedido.cliente_id == usuario.id:
-        if pedido.estado != "listo_retiro":
-            raise HttpError(400, "El pedido no está listo para retirar")
         pedido.estado = "retirado"
         pedido.pin_entrega = ""
         pedido.save(update_fields=["estado", "pin_entrega"])
         return pedido
 
-    # El restaurante también puede marcarlo como retirado, pero debe validar el PIN
-    rol = _rol(usuario)
+    # 2. Caso Restaurante
     if rol == "restaurante":
         restaurante = _restaurante_for_user(usuario)
-
         if restaurante and pedido.restaurante_id == restaurante.id:
-            if pedido.estado != "listo_retiro":
-                raise HttpError(400, "El pedido no está listo para retirar")
             if not pin or pin.strip() != (pedido.pin_entrega or ""):
                 raise HttpError(400, "PIN incorrecto. Proporciónalo para confirmar el retiro.")
+            
             pedido.estado = "retirado"
             pedido.pin_entrega = ""
             pedido.save(update_fields=["estado", "pin_entrega"])
             return pedido
 
-    raise HttpError(403, "No tienes permiso para marcar este pedido como retirado")
+    raise HttpError(403, ERROR_PERMISO)
 
 
 def cancelar_pedido(pedido_id: int, usuario, razon: str = ""):
     pedido = obtener_pedido(pedido_id, usuario, purpose="view")
-    rol = _rol(usuario)
-
+    
+    # Validaciones iniciales (Guard Clauses)
     if pedido.estado in ("entregado", "retirado", "cancelado"):
         raise HttpError(400, "No se puede cancelar un pedido que ya terminó")
 
+    rol = _rol(usuario)
+    
+    # Validación de permisos por rol
     if rol == "cliente" and pedido.cliente_id != usuario.id:
-        raise HttpError(403, "Solo el cliente que hizo el pedido puede cancelarlo")
-
-    if rol == "restaurante":
+        raise HttpError(403, ERROR_PERMISO)
+    elif rol == "restaurante":
         restaurante = _restaurante_for_user(usuario)
         if not restaurante or pedido.restaurante_id != restaurante.id:
             raise HttpError(403, "No tienes permiso para cancelar este pedido")
+    elif rol not in ("cliente", "restaurante", "admin"):
+        raise HttpError(403, ERROR_PERMISO)
 
-    if rol not in ("cliente", "restaurante", "admin"):
-        raise HttpError(403, "No tienes permiso para cancelar este pedido")
-
+    # Acción
     pedido.estado = "cancelado"
     pedido.cancelado_por = usuario
     pedido.cancelado_en = datetime.now()
@@ -418,88 +416,35 @@ def confirmar_recepcion_cliente(pedido_id: int, usuario, calificacion: int):
     return pedido
 
 
+def _check_view_permissions(pedido, usuario, rol):
+    if rol == "admin": return True
+    if rol == "restaurante":
+        restaurante = _restaurante_for_user(usuario)
+        return restaurante and pedido.restaurante_id == restaurante.id
+    if rol == "repartidor":
+        return pedido.repartidor_id == usuario.id
+    return pedido.cliente_id == usuario.id
+
 def obtener_pedido(pedido_id: int, usuario, purpose: str = "view"):
-    """Obtiene un pedido aplicando validaciones de permiso centralizadas.
-
-    purpose:
-      - "view": uso por defecto (ver detalles). Reglas:
-          admin: acceso total
-          restaurante: solo su restaurante
-          repartidor: solo si está asignado
-          cliente: solo si es el cliente dueño
-      - "take": uso para que un repartidor vea/actúe sobre pedidos disponibles
-          permite a repartidores acceder a pedidos no asignados (pero no a retiros)
-      - "manage": uso para operaciones administrativas del restaurante
-          permite admin y restaurante dueño; niega repartidor/cliente
-
-    Todos los servicios deben usar esta función en lugar de consultas directas.
-    """
-    pedido = get_object_or_404(
-        Pedido.objects.prefetch_related("items__producto"), id=pedido_id
-    )
+    pedido = get_object_or_404(Pedido.objects.prefetch_related("items__producto"), id=pedido_id)
     rol = _rol(usuario)
 
+    # Dispatcher de propósito
     if purpose == "view":
-        if rol == "admin":
-            return pedido
-
-        if rol == "restaurante":
-            restaurante = _restaurante_for_user(usuario)
-
-            if not restaurante or pedido.restaurante_id != restaurante.id:
-                raise HttpError(403, "No tienes permiso para ver este pedido")
-
-            return pedido
-
-        if rol == "repartidor":
-            if pedido.repartidor_id != usuario.id:
-                raise HttpError(403, "No tienes permiso para ver este pedido")
-            return pedido
-
-        # cliente
-        if pedido.cliente_id != usuario.id:
-            raise HttpError(403, "No tienes permiso para ver este pedido")
-
+        if not _check_view_permissions(pedido, usuario, rol):
+            raise HttpError(403, ERROR_PERMISO)
         return pedido
 
     if purpose == "take":
-        # Principalmente para repartidores que intentan tomar/rechazar pedidos.
-        if rol == "admin":
-            return pedido
-
-        if rol == "repartidor":
-            return pedido
-
-        # Otros roles usan reglas de view
+        if rol in ["admin", "repartidor"]: return pedido
         return obtener_pedido(pedido_id, usuario, purpose="view")
 
     if purpose == "manage":
-        if rol == "admin":
-            return pedido
-
+        if rol == "admin": return pedido
         if rol == "restaurante":
             restaurante = _restaurante_for_user(usuario)
-
-            if not restaurante or pedido.restaurante_id != restaurante.id:
-                raise HttpError(403, "No tienes permiso para gestionar este pedido")
-
-            return pedido
-
-        # Repartidor y cliente no pueden usar manage
+            if restaurante and pedido.restaurante_id == restaurante.id:
+                return pedido
         raise HttpError(403, "No tienes permiso para gestionar este pedido")
 
-    raise ValueError("purpose desconocido para obtener pedido")
-
-
-def listar_entregados(usuario):
-    """
-    Solo para repartidores: historial de pedidos ya entregados.
-    """
-    if _rol(usuario) != "repartidor":
-        raise HttpError(403, "Solo un repartidor tiene historial de entregados")
-
-    return (
-        Pedido.objects.filter(repartidor=usuario, estado="entregado")
-        .prefetch_related("items__producto")
-        .order_by("-creado_en") 
-    )
+    raise ValueError("purpose desconocido")
