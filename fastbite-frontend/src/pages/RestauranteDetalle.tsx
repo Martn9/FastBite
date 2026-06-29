@@ -20,14 +20,12 @@ export default function RestauranteDetalle() {
       .finally(() => setCargando(false));
   }, [id]);
 
-  // Agrupar productos por categoría
   const categorias = productos.reduce<Record<string, Producto[]>>((acc, p) => {
     if (!acc[p.categoria]) acc[p.categoria] = [];
     acc[p.categoria].push(p);
     return acc;
   }, {});
 
-  // Promociones primero, luego el resto alfabético
   const ordenCategorias = Object.keys(categorias).sort((a, b) => {
     if (a === "Promociones") return -1;
     if (b === "Promociones") return 1;
@@ -58,6 +56,16 @@ export default function RestauranteDetalle() {
               className={`product-row ${categoria === "Promociones" ? "promo-row" : ""}`}
               key={p.id}
             >
+              {p.imagen_url && (
+                <img
+                  src={p.imagen_url}
+                  alt={p.nombre}
+                  className="product-img"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              )}
               <div className="info">
                 <h4>
                   {p.nombre}

@@ -1890,3 +1890,12 @@ button {
   font-size: 0.95rem;
   margin: 0;
 }
+
+/* ---------- Imagen producto ---------- */
+.product-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
