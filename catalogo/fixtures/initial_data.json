@@ -3,13 +3,13 @@
   "model": "catalogo.restaurante",
   "pk": 1,
   "fields": {
-    "nombre": "La Burger Clï¿½sica",
+    "nombre": "La Burger Clásica",
     "descripcion": "Las mejores hamburguesas artesanales de la ciudad",
     "categoria": "Hamburguesas",
     "horario": "12:00 - 23:00",
     "tiempo_entrega": "25 min",
     "imagen_url": "",
-    "user": 13
+    "user": 4
   }
 },
 {
@@ -17,12 +17,12 @@
   "pk": 2,
   "fields": {
     "nombre": "Pizza Nostra",
-    "descripcion": "Pizza italiana al horno de leï¿½a",
+    "descripcion": "Pizza italiana al horno de leña",
     "categoria": "Pizzas",
     "horario": "13:00 - 23:30",
     "tiempo_entrega": "30 min",
     "imagen_url": "",
-    "user": 14
+    "user": 5
   }
 },
 {
@@ -35,7 +35,7 @@
     "horario": "13:00 - 22:00",
     "tiempo_entrega": "35 min",
     "imagen_url": "",
-    "user": 15
+    "user": 6
   }
 },
 {
@@ -43,12 +43,12 @@
   "pk": 4,
   "fields": {
     "nombre": "Taco Loco",
-    "descripcion": "Tacos y burritos estilo mexicano autï¿½ntico",
+    "descripcion": "Tacos y burritos estilo mexicano auténtico",
     "categoria": "Mexicana",
     "horario": "11:00 - 22:30",
     "tiempo_entrega": "20 min",
     "imagen_url": "",
-    "user": 16
+    "user": 7
   }
 },
 {
@@ -61,7 +61,20 @@
     "horario": "11:30 - 22:00",
     "tiempo_entrega": "20 min",
     "imagen_url": "",
-    "user": 17
+    "user": 8
+  }
+},
+{
+  "model": "catalogo.restaurante",
+  "pk": 6,
+  "fields": {
+    "nombre": "McDonald's",
+    "descripcion": "La cadena de comida rápida más reconocida del mundo: hamburguesas, papas y McFlurrys.",
+    "categoria": "Hamburguesas",
+    "horario": "10:00 - 23:59",
+    "tiempo_entrega": "20 min",
+    "imagen_url": "",
+    "user": 9
   }
 },
 {
@@ -69,7 +82,7 @@
   "pk": 1,
   "fields": {
     "restaurante": 1,
-    "nombre": "Burger Clï¿½sica",
+    "nombre": "Burger Clásica",
     "descripcion": "Carne 180g, lechuga, tomate, cheddar",
     "precio": "5900.00",
     "categoria": "Hamburguesas",
@@ -111,7 +124,7 @@
     "nombre": "Papas Fritas",
     "descripcion": "Papas fritas crocantes con sal de mar",
     "precio": "2500.00",
-    "categoria": "Acompaï¿½amientos",
+    "categoria": "Acompañamientos",
     "disponible": true,
     "imagen_url": "https://plus.unsplash.com/premium_photo-1672774750509-bc9ff226f3e8?w=400"
   }
@@ -122,7 +135,7 @@
   "fields": {
     "restaurante": 1,
     "nombre": "PROMO Burger + Papas + Bebida",
-    "descripcion": "Burger clï¿½sica + papas + bebida 500cc",
+    "descripcion": "Burger clásica + papas + bebida 500cc",
     "precio": "7990.00",
     "categoria": "Promociones",
     "disponible": true,
@@ -148,7 +161,7 @@
   "fields": {
     "restaurante": 2,
     "nombre": "Pizza Pepperoni",
-    "descripcion": "Pepperoni, mozzarella, orï¿½gano",
+    "descripcion": "Pepperoni, mozzarella, orégano",
     "precio": "9500.00",
     "categoria": "Pizzas",
     "disponible": true,
@@ -173,8 +186,8 @@
   "pk": 9,
   "fields": {
     "restaurante": 2,
-    "nombre": "Calzone Jamï¿½n",
-    "descripcion": "Calzone relleno de jamï¿½n y champiï¿½ones",
+    "nombre": "Calzone Jamón",
+    "descripcion": "Calzone relleno de jamón y champiñones",
     "precio": "9200.00",
     "categoria": "Pizzas",
     "disponible": true,
@@ -183,24 +196,11 @@
 },
 {
   "model": "catalogo.producto",
-  "pk": 10,
-  "fields": {
-    "restaurante": 2,
-    "nombre": "PROMO 2 Pizzas Medianas",
-    "descripcion": "Elige 2 pizzas medianas a precio especial",
-    "precio": "15900.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1589623998286-a1540efa0a9e?w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
   "pk": 11,
   "fields": {
     "restaurante": 3,
     "nombre": "Roll California",
-    "descripcion": "Kani, palta, pepino, semillas de sï¿½samo",
+    "descripcion": "Kani, palta, pepino, semillas de sésamo",
     "precio": "6900.00",
     "categoria": "Rolls",
     "disponible": true,
@@ -213,7 +213,7 @@
   "fields": {
     "restaurante": 3,
     "nombre": "Roll Spicy Tuna",
-    "descripcion": "Atï¿½n picante, pepino, mayo sriracha",
+    "descripcion": "Atún picante, pepino, mayo sriracha",
     "precio": "7500.00",
     "categoria": "Rolls",
     "disponible": true,
@@ -225,8 +225,8 @@
   "pk": 13,
   "fields": {
     "restaurante": 3,
-    "nombre": "Nigiri Salmï¿½n x6",
-    "descripcion": "6 piezas de nigiri de salmï¿½n fresco",
+    "nombre": "Nigiri Salmón x6",
+    "descripcion": "6 piezas de nigiri de salmón fresco",
     "precio": "7200.00",
     "categoria": "Nigiri",
     "disponible": true,
@@ -239,7 +239,7 @@
   "fields": {
     "restaurante": 3,
     "nombre": "Sashimi Mix x12",
-    "descripcion": "12 piezas mixtas de sashimi del dï¿½a",
+    "descripcion": "12 piezas mixtas de sashimi del día",
     "precio": "11900.00",
     "categoria": "Sashimi",
     "disponible": true,
@@ -252,7 +252,7 @@
   "fields": {
     "restaurante": 3,
     "nombre": "PROMO Zen Box",
-    "descripcion": "8 rolls California + 6 nigiri salmï¿½n + miso",
+    "descripcion": "8 rolls California + 6 nigiri salmón + miso",
     "precio": "14900.00",
     "categoria": "Promociones",
     "disponible": true,
@@ -304,24 +304,11 @@
   "fields": {
     "restaurante": 4,
     "nombre": "Nachos con Queso",
-    "descripcion": "Nachos crocantes con queso fundido y jalapeï¿½os",
+    "descripcion": "Nachos crocantes con queso fundido y jalapeños",
     "precio": "4500.00",
     "categoria": "Entradas",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 20,
-  "fields": {
-    "restaurante": 4,
-    "nombre": "PROMO Taco Tuesday",
-    "descripcion": "3 tacos a elecciï¿½n + refresco de horchata",
-    "precio": "7900.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=400"
   }
 },
 {
@@ -356,7 +343,7 @@
   "fields": {
     "restaurante": 5,
     "nombre": "Alitas BBQ x8",
-    "descripcion": "8 alitas baï¿½adas en salsa BBQ casera",
+    "descripcion": "8 alitas bañadas en salsa BBQ casera",
     "precio": "5900.00",
     "categoria": "Alitas",
     "disponible": true,
@@ -374,19 +361,6 @@
     "categoria": "Combos",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1611489142329-5f62cfa43e6e?w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 25,
-  "fields": {
-    "restaurante": 5,
-    "nombre": "PROMO Pollo + Papas",
-    "descripcion": "1/4 pollo broaster + papas grandes + bebida",
-    "precio": "6490.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://plus.unsplash.com/premium_photo-1683657860906-d49d1bb37aab?w=400"
   }
 },
 {
@@ -498,8 +472,8 @@
   "pk": 34,
   "fields": {
     "restaurante": 3,
-    "nombre": "Tï¿½ Verde",
-    "descripcion": "Tï¿½ verde japonï¿½s caliente o frï¿½o",
+    "nombre": "Té Verde",
+    "descripcion": "Té verde japonés caliente o frío",
     "precio": "1500.00",
     "categoria": "Bebidas",
     "disponible": true,
@@ -538,7 +512,7 @@
   "fields": {
     "restaurante": 4,
     "nombre": "Agua de Jamaica",
-    "descripcion": "Bebida de flor de jamaica frï¿½a",
+    "descripcion": "Bebida de flor de jamaica fría",
     "precio": "1500.00",
     "categoria": "Bebidas",
     "disponible": true,
@@ -564,7 +538,7 @@
   "fields": {
     "restaurante": 4,
     "nombre": "Guacamole Extra",
-    "descripcion": "Porciï¿½n extra de guacamole con totopos",
+    "descripcion": "Porción extra de guacamole con totopos",
     "precio": "2900.00",
     "categoria": "Entradas",
     "disponible": true,
@@ -605,7 +579,7 @@
     "nombre": "Ensalada Fresca",
     "descripcion": "Ensalada de lechuga, tomate y zanahoria",
     "precio": "1800.00",
-    "categoria": "Acompaï¿½amientos",
+    "categoria": "Acompañamientos",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1626451542138-1f86835340ec?w=400"
   }
@@ -616,24 +590,11 @@
   "fields": {
     "restaurante": 5,
     "nombre": "Papas Grandes",
-    "descripcion": "Porciï¿½n grande de papas fritas crocantes",
+    "descripcion": "Porción grande de papas fritas crocantes",
     "precio": "2200.00",
-    "categoria": "Acompaï¿½amientos",
+    "categoria": "Acompañamientos",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 44,
-  "fields": {
-    "restaurante": 1,
-    "nombre": "Promo 20% - Combo Especial",
-    "descripcion": "Combo en promocion especial con descuento directo en el precio.",
-    "precio": "8000.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
   }
 },
 {
@@ -642,24 +603,11 @@
   "fields": {
     "restaurante": 1,
     "nombre": "Postre Premium",
-    "descripcion": "Postre de la casa para acompaï¿½ar tu pedido.",
+    "descripcion": "Postre de la casa para acompañar tu pedido.",
     "precio": "3500.00",
     "categoria": "Postres",
     "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 46,
-  "fields": {
-    "restaurante": 2,
-    "nombre": "Promo 20% - Combo Especial",
-    "descripcion": "Combo en promocion especial con descuento directo en el precio.",
-    "precio": "8000.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+    "imagen_url": "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400"
   }
 },
 {
@@ -668,24 +616,11 @@
   "fields": {
     "restaurante": 2,
     "nombre": "Postre Premium",
-    "descripcion": "Postre de la casa para acompaï¿½ar tu pedido.",
+    "descripcion": "Postre de la casa para acompañar tu pedido.",
     "precio": "3500.00",
     "categoria": "Postres",
     "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 48,
-  "fields": {
-    "restaurante": 3,
-    "nombre": "Promo 20% - Combo Especial",
-    "descripcion": "Combo en promocion especial con descuento directo en el precio.",
-    "precio": "8000.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+    "imagen_url": "https://images.unsplash.com/photo-1613505411792-208b15f862b0?w=400"
   }
 },
 {
@@ -694,24 +629,11 @@
   "fields": {
     "restaurante": 3,
     "nombre": "Postre Premium",
-    "descripcion": "Postre de la casa para acompaï¿½ar tu pedido.",
+    "descripcion": "Postre de la casa para acompañar tu pedido.",
     "precio": "3500.00",
     "categoria": "Postres",
     "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 50,
-  "fields": {
-    "restaurante": 4,
-    "nombre": "Promo 20% - Combo Especial",
-    "descripcion": "Combo en promociï¿½n especial con descuento directo en el precio.",
-    "precio": "8000.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1701104843424-9819104494e6?w=400"
   }
 },
 {
@@ -720,24 +642,11 @@
   "fields": {
     "restaurante": 4,
     "nombre": "Postre Premium",
-    "descripcion": "Postre de la casa para acompaï¿½ar tu pedido.",
+    "descripcion": "Postre de la casa para acompañar tu pedido.",
     "precio": "3500.00",
     "categoria": "Postres",
     "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400"
-  }
-},
-{
-  "model": "catalogo.producto",
-  "pk": 52,
-  "fields": {
-    "restaurante": 5,
-    "nombre": "Promo 20% - Combo Especial",
-    "descripcion": "Combo en promociï¿½n especial con descuento directo en el precio.",
-    "precio": "8000.00",
-    "categoria": "Promociones",
-    "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1714180194796-8cb272b0bfed?w=400"
   }
 },
 {
@@ -746,11 +655,414 @@
   "fields": {
     "restaurante": 5,
     "nombre": "Postre Premium",
-    "descripcion": "Postre de la casa para acompaï¿½ar tu pedido.",
+    "descripcion": "Postre de la casa para acompañar tu pedido.",
     "precio": "3500.00",
     "categoria": "Postres",
     "disponible": true,
-    "imagen_url": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400"
+    "imagen_url": "https://images.unsplash.com/photo-1684456156705-5014341fc700?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 54,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "Big Mac",
+    "descripcion": "Doble carne, salsa especial, lechuga, queso, pepinillos y cebolla en pan con ajonjolí.",
+    "precio": "5200.00",
+    "categoria": "Hamburguesas",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 55,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "McNífica",
+    "descripcion": "Carne 100% de res a la parrilla, queso cheddar, lechuga, tomate y cebolla.",
+    "precio": "4800.00",
+    "categoria": "Hamburguesas",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 56,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "McPollo",
+    "descripcion": "Filete de pollo crocante, lechuga y mayonesa en pan suave.",
+    "precio": "4300.00",
+    "categoria": "Hamburguesas",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 57,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "Papas Fritas Medianas",
+    "descripcion": "Las clásicas papas fritas doradas y crocantes, con la sal justa.",
+    "precio": "2200.00",
+    "categoria": "Acompañamientos",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 58,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "Nuggets de Pollo x10",
+    "descripcion": "10 trocitos de pollo empanizados y crocantes, con tu salsa favorita.",
+    "precio": "4100.00",
+    "categoria": "Acompañamientos",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 59,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "McFlurry Oreo",
+    "descripcion": "Helado cremoso de vainilla mezclado con trocitos de galleta Oreo.",
+    "precio": "2900.00",
+    "categoria": "Postres",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1627053947185-1d02dc9435ac?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 60,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "Bebida 500cc",
+    "descripcion": "Coca-Cola, Fanta o Sprite bien helada.",
+    "precio": "1200.00",
+    "categoria": "Bebidas",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1716800586014-fea19e9453fb?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 61,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "Combo Big Mac",
+    "descripcion": "Big Mac + papas medianas + bebida 500cc. Precio combo, todo en uno.",
+    "precio": "7900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1603614550145-c7bb90bbfddf?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 62,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "Cajita Feliz",
+    "descripcion": "4 nuggets de pollo + porcion de papas fritas + bebida + sorpresa de regalo.",
+    "precio": "4500.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1610736427087-9c93ff8c9476?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 63,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "PROMO 2x1 McNífica (20% OFF)",
+    "descripcion": "Antes $9.600, ahora $7.680 por 2 McNíficas. ¡Ahorra 20% pidiendo de a dos!",
+    "precio": "7680.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 64,
+  "fields": {
+    "restaurante": 6,
+    "nombre": "PROMO McFlurry + Papas (30% OFF)",
+    "descripcion": "Antes $5.100, ahora $3.570 por McFlurry Oreo + papas medianas. 30% de descuento.",
+    "precio": "3570.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1627053947185-1d02dc9435ac?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 66,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Promo Noche Italiana - Pizza 4 Quesos Normal",
+    "descripcion": "De 20:00 a cierre: Pizza 4 Quesos con 25% de descuento. Solo por hoy!",
+    "precio": "7900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1732223229355-95a1433404bf?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 67,
+  "fields": {
+    "restaurante": 3,
+    "nombre": "Promo Almuerzo Zen - Spicy Tuna + Miso",
+    "descripcion": "Almuerzo completo: Roll Spicy Tuna + Sopa Miso. 25% de descuento hasta las 15:00.",
+    "precio": "7500.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1695304029736-811040353a2e?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 68,
+  "fields": {
+    "restaurante": 4,
+    "nombre": "Promo Martes Loco - Burrito + Horchata",
+    "descripcion": "Cada martes: Burrito completo + Refresco de Horchata con 20% off.",
+    "precio": "6900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 69,
+  "fields": {
+    "restaurante": 5,
+    "nombre": "Promo Fin de Semana - Alitas BBQ + Papas",
+    "descripcion": "Sabado y domingo: 8 Alitas BBQ + Papas Grandes con 20% de descuento.",
+    "precio": "6500.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1624153064067-566cae78993d?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 71,
+  "fields": {
+    "restaurante": 1,
+    "nombre": "Promo 2x1 Papas Fritas - Solo Lunes",
+    "descripcion": "Cada lunes pides unas papas y te mandamos dos. Valido todo el dia.",
+    "precio": "2500.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1672774750509-bc9ff226f3e8?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 72,
+  "fields": {
+    "restaurante": 1,
+    "nombre": "Promo Happy Hour - Burger Pollo BBQ + Bebida",
+    "descripcion": "De 15:00 a 18:00 lleva la Burger Pollo BBQ + bebida con 25% de descuento.",
+    "precio": "5900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1520073201527-6b044ba2ca9f?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 73,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Promo Pareja - 2 Pizzas + Jugo de Naranja",
+    "descripcion": "Pizza Margherita Mediana + Pizza Pepperoni Mediana + 2 Jugos de Naranja con 15% off.",
+    "precio": "14500.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1528137871618-79d2761e3fd5?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 74,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Promo Estudiante - Pizza Margherita + Bebida",
+    "descripcion": "Presenta tu credencial universitaria y lleva Pizza Margherita + bebida con 20% off.",
+    "precio": "8200.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 75,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Promo Miercoles Familiar - Margherita + Pepperoni + 4 Quesos",
+    "descripcion": "Solo miercoles: Pizza Margherita + Pizza Pepperoni + Pizza 4 Quesos Normal con 20% off.",
+    "precio": "23000.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 76,
+  "fields": {
+    "restaurante": 3,
+    "nombre": "Promo Primera Vez - Roll California + Miso gratis",
+    "descripcion": "Es tu primera vez en Sushi Zen? Lleva Roll California y te regalamos la Sopa Miso.",
+    "precio": "6900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1667545168921-34f756495d7b?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 79,
+  "fields": {
+    "restaurante": 4,
+    "nombre": "Promo 30 de Junio - Nachos + 3 Tacos",
+    "descripcion": "Celebra el 30 de junio con nosotros: Nachos con Queso + 2 Tacos de Carne + 1 Taco de Pollo con 22% off.",
+    "precio": "10200.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 80,
+  "fields": {
+    "restaurante": 4,
+    "nombre": "Promo Duo Taquero - 6 Tacos Mixtos",
+    "descripcion": "6 tacos mixtos: 3 de carne + 3 de pollo. Ideal para compartir con 18% off.",
+    "precio": "13100.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1599488400918-5f5f96b3f463?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 81,
+  "fields": {
+    "restaurante": 4,
+    "nombre": "Promo Noche Mexicana - Burrito + Guacamole + Horchata",
+    "descripcion": "La combinacion perfecta para la noche: Burrito + Guacamole Extra + Horchata con 20% off.",
+    "precio": "9200.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 82,
+  "fields": {
+    "restaurante": 5,
+    "nombre": "Promo Domingo Familiar - Pollo Entero + 4 Bebidas",
+    "descripcion": "El domingo es dia de familia: pollo asado entero + 4 bebidas con 25% off.",
+    "precio": "14900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1597652096872-658bf24731ec?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 84,
+  "fields": {
+    "restaurante": 5,
+    "nombre": "Promo Escolar - Pollo Broaster + Bebida",
+    "descripcion": "Para estudiantes: Pollo Broaster 1/4 + bebida 500cc con 15% off. Presenta credencial.",
+    "precio": "5200.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1562967914-608f82629710?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 85,
+  "fields": {
+    "restaurante": 1,
+    "nombre": "Promo Lunes Feliz - Burger Clasica + Postre",
+    "descripcion": "Cada lunes: Burger Clasica + Postre de la casa con 20% off. Valido todo el dia.",
+    "precio": "6700.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 86,
+  "fields": {
+    "restaurante": 3,
+    "nombre": "Promo Trio Zen - Sashimi + Roll + Miso",
+    "descripcion": "Combo completo: Sashimi Mix x12 + Roll California + Sopa Miso con 22% off.",
+    "precio": "18200.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 88,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Pizza Margherita Mediana",
+    "descripcion": "Salsa de tomate, mozzarella fresca, albahaca. Tamaño mediano.",
+    "precio": "6500.00",
+    "categoria": "Pizzas",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 89,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Pizza Pepperoni Mediana",
+    "descripcion": "Pepperoni, mozzarella, oregano. Tamaño mediano.",
+    "precio": "7000.00",
+    "categoria": "Pizzas",
+    "disponible": true,
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1733259709671-9dbf22bf02cc?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 90,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Pizza 4 Quesos Mediana",
+    "descripcion": "Mozzarella, gorgonzola, parmesano, brie. Tamaño mediano.",
+    "precio": "7800.00",
+    "categoria": "Pizzas",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1732223229355-95a1433404bf?w=400"
   }
 }
 ]
