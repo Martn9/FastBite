@@ -59,7 +59,7 @@ class Pedido(models.Model):
     tipo_entrega = models.CharField(
         max_length=20, choices=TIPO_ENTREGA_CHOICES, default="delivery"
     )
-    direccion_entrega = models.CharField(max_length=255, null=True, blank=True)
+    direccion_entrega = models.CharField(max_length=255, blank=True)
     pago_repartidor = models.IntegerField(default=0)
 
     # Campos de totales y descuento

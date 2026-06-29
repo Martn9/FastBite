@@ -256,25 +256,19 @@ def tomar_pedido(pedido_id: int, usuario):
 def avanzar_estado_pedido(pedido_id: int, usuario):
     """
     Usa el patrón State para avanzar al siguiente estado del pedido.
-    El estado "entregado" ahora se alcanza SOLO con el endpoint de PIN,
-    así que aquí bloqueamos el avance desde "en_camino".
-    Permisos:
-    - admin: puede avanzar cualquier pedido (excepto el paso final).
-    - repartidor: solo puede avanzar el pedido que él mismo tomó.
-    - cliente: nunca puede avanzar un pedido.
     """
     pedido = obtener_pedido(pedido_id, usuario, purpose="manage")
     rol = _rol(usuario)
 
     if rol == "admin":
-        allowed = True
+        pass  # El admin pasa directo
     elif rol == "restaurante":
         # Verificar que el restaurante del usuario coincide con el pedido
         restaurante = _restaurante_for_user(usuario)
 
         if not restaurante or pedido.restaurante_id != restaurante.id:
             raise HttpError(403, "No tienes permiso para avanzar pedidos de otro restaurante")
-        allowed = True
+        # Ya no necesitamos asignar allowed = True
     else:
         # Los repartidores no usan este endpoint para avanzar la preparación
         raise HttpError(403, "Solo el restaurante o admin pueden avanzar el estado de preparación")
@@ -507,5 +501,5 @@ def listar_entregados(usuario):
     return (
         Pedido.objects.filter(repartidor=usuario, estado="entregado")
         .prefetch_related("items__producto")
-        .order_by("-creado_en")
+        .order_by("-creado_en") 
     )
