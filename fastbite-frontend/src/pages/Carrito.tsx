@@ -19,6 +19,13 @@ export default function Carrito() {
   const [tipoEntrega, setTipoEntrega] = useState<"delivery" | "retiro">("delivery");
   const [direccion, setDireccion] = useState("");
 
+  // Método de pago
+  const [metodoPago, setMetodoPago] = useState<"tarjeta" | "transferencia" | "efectivo">("efectivo");
+  const [numeroTarjeta, setNumeroTarjeta] = useState("");
+  const [nombreTitular, setNombreTitular] = useState("");
+  const [vencimiento, setVencimiento] = useState("");
+  const [cvv, setCvv] = useState(""); 
+
   // Cupón
   const [codigoCupon, setCodigoCupon] = useState("");
   const [cuponEstado, setCuponEstado] = useState<"idle" | "cargando" | "valido" | "invalido">("idle");
@@ -112,6 +119,11 @@ useEffect(() => {
       return;
     }
 
+    if (metodoPago === "tarjeta" && !numeroTarjeta.trim()) {
+      setError("Por favor ingresa el número de tu tarjeta.");
+      return;
+    }
+    
     setCargando(true);
     try {
       const pedido = await api.crearPedido(
@@ -122,6 +134,10 @@ useEffect(() => {
         tipoEntrega,
         tipoEntrega === "delivery" ? direccion.trim() : undefined,
         cuponAplicado ? codigoCupon.trim().toUpperCase() : undefined,
+        metodoPago,
+        metodoPago === "tarjeta"
+          ? { numero_tarjeta: numeroTarjeta, nombre_titular: nombreTitular, vencimiento, cvv }
+          : undefined,
       );
       vaciar();
       navigate(`/pedidos/${pedido.id}`);
@@ -255,6 +271,98 @@ useEffect(() => {
               </div>
             )}
           </div>
+
+
+       {/* Método de pago */}
+          <div className="cart-section-card">
+            <div className="cart-section-title">
+              <span className="cart-section-icon">💳</span>
+              <h2>Método de pago</h2>
+            </div>
+
+            <div className="delivery-toggle">
+              <button
+                className={`delivery-option ${metodoPago === "tarjeta" ? "active" : ""}`}
+                onClick={() => setMetodoPago("tarjeta")}
+              >
+                <span className="delivery-option-icon">💳</span>
+                <div>
+                  <strong>Tarjeta</strong>
+                  <small>Débito o crédito</small>
+                </div>
+              </button>
+
+              <button
+                className={`delivery-option ${metodoPago === "transferencia" ? "active" : ""}`}
+                onClick={() => setMetodoPago("transferencia")}
+              >
+                <span className="delivery-option-icon">🏦</span>
+                <div>
+                  <strong>Transferencia</strong>
+                  <small>Confirmación inmediata</small>
+                </div>
+              </button>
+
+              <button
+                className={`delivery-option ${metodoPago === "efectivo" ? "active" : ""}`}
+                onClick={() => setMetodoPago("efectivo")}
+              >
+                <span className="delivery-option-icon">💵</span>
+                <div>
+                  <strong>Efectivo</strong>
+                  <small>Al recibir o retirar</small>
+                </div>
+              </button>
+            </div>
+
+          {metodoPago === "tarjeta" && (
+              <div className="cart-address-wrap">
+                <label className="form-label">Número de tarjeta</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="1234 5678 9012 3456"
+                  value={numeroTarjeta}
+                  onChange={(e) => setNumeroTarjeta(e.target.value)}
+                  style={{ marginBottom: "0.75rem" }}
+                />
+                <label className="form-label">Nombre del titular</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Como aparece en la tarjeta"
+                  value={nombreTitular}
+                  onChange={(e) => setNombreTitular(e.target.value)}
+                  style={{ marginBottom: "0.75rem" }}
+                />
+                <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="form-label">Vencimiento</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="MM/AA"
+                      value={vencimiento}
+                      onChange={(e) => setVencimiento(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="form-label">CVV</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="123"
+                      value={cvv}
+                      onChange={(e) => setCvv(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <p className="form-hint" style={{ marginTop: "0.5rem" }}>
+                  💡 Demo: si el número termina en 0000, el pago se rechaza.
+                </p>
+              </div>
+            )}
+          </div>   
 
           {/* Cupón de descuento */}
           <div className="cart-section-card">

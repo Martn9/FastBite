@@ -102,16 +102,17 @@ export async function crearPedido(
   items: { producto_id: number; cantidad: number }[],
   tipo_entrega: string = "delivery",
   direccion_entrega?: string,
-  codigo_cupon?: string
+  codigo_cupon?: string,
+  metodo_pago: string = "efectivo",
+  datos_pago?: { numero_tarjeta?: string; nombre_titular?: string; vencimiento?: string; cvv?: string }
 ): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ items, tipo_entrega, direccion_entrega, codigo_cupon }),
+    body: JSON.stringify({ items, tipo_entrega, direccion_entrega, codigo_cupon, metodo_pago, datos_pago }),
   });
   return parseOrThrow(res);
 }
-
 export async function validarCupon(codigo: string): Promise<{ valido: boolean; porcentaje: number; mensaje: string }> {
   const res = await fetch(`${BASE_URL}/pedidos/cupones/validar`, {
     method: "POST",
