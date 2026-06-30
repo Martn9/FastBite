@@ -19,13 +19,6 @@ export default function Carrito() {
   const [tipoEntrega, setTipoEntrega] = useState<"delivery" | "retiro">("delivery");
   const [direccion, setDireccion] = useState("");
 
-  // Método de pago
-  const [metodoPago, setMetodoPago] = useState<"tarjeta" | "transferencia" | "efectivo">("efectivo");
-  const [numeroTarjeta, setNumeroTarjeta] = useState("");
-  const [nombreTitular, setNombreTitular] = useState("");
-  const [vencimiento, setVencimiento] = useState("");
-  const [cvv, setCvv] = useState(""); 
-
   // Cupón
   const [codigoCupon, setCodigoCupon] = useState("");
   const [cuponEstado, setCuponEstado] = useState<"idle" | "cargando" | "valido" | "invalido">("idle");
@@ -33,6 +26,13 @@ export default function Carrito() {
   const [cuponMensaje, setCuponMensaje] = useState("");
   const [cuponAplicado, setCuponAplicado] = useState(false);
   const [restaurante, setRestaurante] = useState<Restaurante | null>(null);
+
+  // Método de pago
+  const [metodoPago, setMetodoPago] = useState<"efectivo" | "tarjeta" | "transferencia">("efectivo");
+  const [numeroTarjeta, setNumeroTarjeta] = useState("");
+  const [nombreTitular, setNombreTitular] = useState("");
+  const [vencimiento, setVencimiento] = useState("");
+  const [cvv, setCvv] = useState("");
 
   // Cálculo de totales
   const costoEnvio = tipoEntrega === "delivery" ? 1500 : 0;
@@ -119,11 +119,11 @@ useEffect(() => {
       return;
     }
 
-    if (metodoPago === "tarjeta" && !numeroTarjeta.trim()) {
-      setError("Por favor ingresa el número de tu tarjeta.");
+    if (metodoPago === "tarjeta" && (!numeroTarjeta.trim() || !nombreTitular.trim() || !vencimiento.trim() || !cvv.trim())) {
+      setError("Completa todos los datos de la tarjeta.");
       return;
     }
-    
+
     setCargando(true);
     try {
       const pedido = await api.crearPedido(
@@ -136,7 +136,12 @@ useEffect(() => {
         cuponAplicado ? codigoCupon.trim().toUpperCase() : undefined,
         metodoPago,
         metodoPago === "tarjeta"
-          ? { numero_tarjeta: numeroTarjeta, nombre_titular: nombreTitular, vencimiento, cvv }
+          ? {
+              numero_tarjeta: numeroTarjeta.trim(),
+              nombre_titular: nombreTitular.trim(),
+              vencimiento: vencimiento.trim(),
+              cvv: cvv.trim(),
+            }
           : undefined,
       );
       vaciar();
@@ -272,98 +277,6 @@ useEffect(() => {
             )}
           </div>
 
-
-       {/* Método de pago */}
-          <div className="cart-section-card">
-            <div className="cart-section-title">
-              <span className="cart-section-icon">💳</span>
-              <h2>Método de pago</h2>
-            </div>
-
-            <div className="delivery-toggle">
-              <button
-                className={`delivery-option ${metodoPago === "tarjeta" ? "active" : ""}`}
-                onClick={() => setMetodoPago("tarjeta")}
-              >
-                <span className="delivery-option-icon">💳</span>
-                <div>
-                  <strong>Tarjeta</strong>
-                  <small>Débito o crédito</small>
-                </div>
-              </button>
-
-              <button
-                className={`delivery-option ${metodoPago === "transferencia" ? "active" : ""}`}
-                onClick={() => setMetodoPago("transferencia")}
-              >
-                <span className="delivery-option-icon">🏦</span>
-                <div>
-                  <strong>Transferencia</strong>
-                  <small>Confirmación inmediata</small>
-                </div>
-              </button>
-
-              <button
-                className={`delivery-option ${metodoPago === "efectivo" ? "active" : ""}`}
-                onClick={() => setMetodoPago("efectivo")}
-              >
-                <span className="delivery-option-icon">💵</span>
-                <div>
-                  <strong>Efectivo</strong>
-                  <small>Al recibir o retirar</small>
-                </div>
-              </button>
-            </div>
-
-          {metodoPago === "tarjeta" && (
-              <div className="cart-address-wrap">
-                <label className="form-label">Número de tarjeta</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="1234 5678 9012 3456"
-                  value={numeroTarjeta}
-                  onChange={(e) => setNumeroTarjeta(e.target.value)}
-                  style={{ marginBottom: "0.75rem" }}
-                />
-                <label className="form-label">Nombre del titular</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Como aparece en la tarjeta"
-                  value={nombreTitular}
-                  onChange={(e) => setNombreTitular(e.target.value)}
-                  style={{ marginBottom: "0.75rem" }}
-                />
-                <div style={{ display: "flex", gap: "0.75rem" }}>
-                  <div style={{ flex: 1 }}>
-                    <label className="form-label">Vencimiento</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="MM/AA"
-                      value={vencimiento}
-                      onChange={(e) => setVencimiento(e.target.value)}
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label className="form-label">CVV</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="123"
-                      value={cvv}
-                      onChange={(e) => setCvv(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <p className="form-hint" style={{ marginTop: "0.5rem" }}>
-                  💡 Demo: si el número termina en 0000, el pago se rechaza.
-                </p>
-              </div>
-            )}
-          </div>   
-
           {/* Cupón de descuento */}
           <div className="cart-section-card">
             <div className="cart-section-title">
@@ -421,6 +334,97 @@ useEffect(() => {
             <div className="coupon-hint">
               <small>💡 Códigos disponibles: FAST10 (10%), FAST20 (20%), MEGA40 (40%)</small>
             </div>
+          </div>
+
+          {/* Método de pago */}
+          <div className="cart-section-card">
+            <div className="cart-section-title">
+              <span className="cart-section-icon">💳</span>
+              <h2>Método de pago</h2>
+            </div>
+
+            <div className="delivery-toggle">
+              <button
+                className={`delivery-option ${metodoPago === "efectivo" ? "active" : ""}`}
+                onClick={() => setMetodoPago("efectivo")}
+                type="button"
+              >
+                <span className="delivery-option-icon">💵</span>
+                <div>
+                  <strong>Efectivo</strong>
+                  <small>Pagas al recibir o retirar</small>
+                </div>
+              </button>
+
+              <button
+                className={`delivery-option ${metodoPago === "tarjeta" ? "active" : ""}`}
+                onClick={() => setMetodoPago("tarjeta")}
+                type="button"
+              >
+                <span className="delivery-option-icon">💳</span>
+                <div>
+                  <strong>Tarjeta</strong>
+                  <small>Débito o crédito</small>
+                </div>
+              </button>
+
+              <button
+                className={`delivery-option ${metodoPago === "transferencia" ? "active" : ""}`}
+                onClick={() => setMetodoPago("transferencia")}
+                type="button"
+              >
+                <span className="delivery-option-icon">🏦</span>
+                <div>
+                  <strong>Transferencia</strong>
+                  <small>Confirmación inmediata</small>
+                </div>
+              </button>
+            </div>
+
+            {metodoPago === "tarjeta" && (
+              <div className="cart-address-wrap" style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Número de tarjeta (16 dígitos)"
+                  inputMode="numeric"
+                  maxLength={19}
+                  value={numeroTarjeta}
+                  onChange={(e) => setNumeroTarjeta(e.target.value.replace(/[^\d ]/g, ""))}
+                />
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nombre del titular"
+                  value={nombreTitular}
+                  onChange={(e) => setNombreTitular(e.target.value)}
+                />
+                <div style={{ display: "flex", gap: "0.7rem" }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="MM/AA"
+                    maxLength={5}
+                    value={vencimiento}
+                    onChange={(e) => setVencimiento(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="CVV"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
+                    style={{ flex: 1 }}
+                  />
+                </div>
+                <small style={{ color: "var(--text-muted)" }}>
+                  💡 Demo: una tarjeta que termine en "0000" simula un pago rechazado.
+                </small>
+              </div>
+            )}
           </div>
         </div>
 

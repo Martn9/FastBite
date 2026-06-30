@@ -59,6 +59,10 @@ export interface Pedido {
   // Totales y descuentos
   descuento_aplicado: number;
   total_final: number;
+  // Pago (Strategy de métodos de pago)
+  metodo_pago: string | null;
+  estado_pago: string | null;
+  referencia_pago: string | null;
   // Confirmación y calificación del cliente
   confirmado_cliente: boolean;
   calificacion_repartidor: number | null;

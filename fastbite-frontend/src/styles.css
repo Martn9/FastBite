@@ -23,6 +23,8 @@
   --text-muted: #64748b;
   --border-light: rgba(148, 163, 184, 0.12);
   --border-focus: #ff5e3a;
+  --bg-input: #f8fafc;
+  --bg-input-focus: #ffffff;
   
   /* Typography */
   --font-display: "Outfit", sans-serif;
@@ -40,6 +42,49 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+}
+
+/* ---------- Modo oscuro ---------- */
+[data-tema="oscuro"] {
+  --bg-app: #0b1120;
+  --bg-canvas: #161e2e;
+  --bg-glass: rgba(22, 30, 46, 0.75);
+
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border-light: rgba(148, 163, 184, 0.16);
+
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.45), 0 2px 8px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.55), 0 10px 20px -10px rgba(0, 0, 0, 0.4);
+  --bg-input: #1e293b;
+  --bg-input-focus: #243044;
+}
+
+[data-tema="oscuro"] body {
+  background-image:
+    radial-gradient(at 0% 0%, rgba(255, 94, 58, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1.5px solid var(--border-light);
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.08);
+  border-color: rgba(255, 94, 58, 0.4);
 }
 
 * {
@@ -437,7 +482,7 @@ button {
 }
 
 .btn-ghost {
-  background: #ffffff;
+  background: var(--bg-input-focus);
   border: 1px solid rgba(148, 163, 184, 0.25);
   color: var(--text-main);
   border-radius: var(--radius-md);
@@ -495,7 +540,7 @@ button {
   border: 1.5px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-md);
   font-size: 0.95rem;
-  background: #f8fafc;
+  background: var(--bg-input);
   color: var(--text-main);
   font-family: var(--font-body);
   transition: all 0.2s ease;
@@ -505,7 +550,30 @@ button {
 .form-card select:focus {
   outline: none;
   border-color: var(--border-focus);
-  background: #ffffff;
+  background: var(--bg-input-focus);
+  box-shadow: var(--shadow-glow);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  transition: all 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  background: var(--bg-input-focus);
   box-shadow: var(--shadow-glow);
 }
 
@@ -663,15 +731,31 @@ button {
   position: relative;
   width: 100%;
   height: 150px;
-  background-size: cover;
-  background-position: center;
+  min-height: 150px;
+  max-height: 150px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card-banner-img {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .card-banner-img {
+  transform: scale(1.06);
 }
 
 .card-banner-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.35) 100%);
+  pointer-events: none;
 }
 
 .card-banner-fallback {
@@ -692,24 +776,11 @@ button {
   gap: 0.3rem;
 }
 
-.card:hover .card-banner {
-  filter: brightness(1.04);
-}
-
 .skeleton-banner {
   width: 100%;
   height: 150px;
   border-radius: 0;
   margin: 0;
-}
-
-.promo-restaurant-tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--primary);
-  opacity: 0.85;
 }
 
 .card-footer {
@@ -992,7 +1063,8 @@ button {
   border: 1.5px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-md);
   font-size: 0.95rem;
-  background: #f8fafc;
+  background: var(--bg-input);
+  color: var(--text-main);
   transition: all 0.2s ease;
   font-family: var(--font-body);
 }
@@ -1001,7 +1073,7 @@ button {
 .auth-card select:focus {
   outline: none;
   border-color: var(--border-focus);
-  background: #ffffff;
+  background: var(--bg-input-focus);
   box-shadow: var(--shadow-glow);
 }
 
@@ -1017,7 +1089,7 @@ button {
   padding: 0.7rem;
   border: 1.5px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-md);
-  background: #f8fafc;
+  background: var(--bg-input);
   font-weight: 600;
   font-size: 0.9rem;
   transition: all 0.2s ease;
@@ -1368,7 +1440,7 @@ button {
 
 /* ---------- Order Items (detail) ---------- */
 .pedido-items-detalle {
-  background: #f8fafc;
+  background: var(--bg-input);
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: var(--radius-md);
   padding: 1.2rem;
@@ -1447,7 +1519,7 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 0.65rem 1rem;
-  background: #f8fafc;
+  background: var(--bg-input);
   border: none;
   font-size: 0.88rem;
   cursor: pointer;
@@ -1572,7 +1644,7 @@ button {
 }
 
 .pin-toggle {
-  background: #ffffff;
+  background: var(--bg-input-focus);
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
@@ -1698,14 +1770,14 @@ button {
   align-items: center;
   gap: 0.9rem;
   padding: 0.75rem;
-  background: #f8fafc;
+  background: var(--bg-input);
   border-radius: var(--radius-md);
   border: 1px solid rgba(148, 163, 184, 0.12);
   transition: background 0.15s;
 }
 
 .cart-item:hover {
-  background: #f1f5f9;
+  background: var(--bg-input);
 }
 
 .cart-item-img {
@@ -1799,7 +1871,7 @@ button {
   padding: 1rem 1.15rem;
   border: 2px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-md);
-  background: #f8fafc;
+  background: var(--bg-input);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -2017,7 +2089,7 @@ button {
   gap: 0.5rem;
   font-size: 0.8rem;
   color: var(--text-muted);
-  background: #f1f5f9;
+  background: var(--bg-input);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.7rem;
   margin-bottom: 1rem;

@@ -185,6 +185,8 @@ export default function Pedido() {
   const [errorPinRetiro, setErrorPinRetiro] = useState<string | null>(null);
   const [cargandoPinRetiro, setCargandoPinRetiro] = useState(false);
   const [calificacion, setCalificacion] = useState(5);
+  const [calificacionRestaurante, setCalificacionRestaurante] = useState(5);
+  const [calificandoRestaurante, setCalificandoRestaurante] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [errorConfirmar, setErrorConfirmar] = useState<string | null>(null);
 
@@ -282,11 +284,15 @@ export default function Pedido() {
 
   async function handleCalificarRestaurante() {
     if (!id) return;
+    setCalificandoRestaurante(true);
+    setErrorConfirmar(null);
     try {
-      const actualizado = await api.calificarRestaurante(Number(id), calificacion);
+      const actualizado = await api.calificarRestaurante(Number(id), calificacionRestaurante);
       setPedido(actualizado);
     } catch (err) {
       setErrorConfirmar(err instanceof ApiError ? err.message : "No se pudo calificar.");
+    } finally {
+      setCalificandoRestaurante(false);
     }
   }
 
@@ -465,6 +471,39 @@ export default function Pedido() {
           </div>
         )}
 
+        {pedido.metodo_pago && (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">
+              {pedido.metodo_pago === "tarjeta" ? "💳" : pedido.metodo_pago === "transferencia" ? "🏦" : "💵"}{" "}
+              Pago
+            </span>
+            <span style={{ textTransform: "capitalize" }}>
+              {pedido.metodo_pago}
+              {pedido.estado_pago && (
+                <span
+                  style={{
+                    marginLeft: "0.5rem",
+                    fontSize: "0.78rem",
+                    color: pedido.estado_pago === "aprobado" ? "#16a34a" : "#dc2626",
+                    fontWeight: 700,
+                  }}
+                >
+                  ({pedido.estado_pago})
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {pedido.referencia_pago && (
+          <div className="pedido-info-row">
+            <span className="pedido-info-label">🧾 Referencia</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem" }}>
+              {pedido.referencia_pago}
+            </span>
+          </div>
+        )}
+
         <hr className="pedido-divider" />
 
         {/* ── Tracker de estados ────────────────────────────────────────── */}
@@ -607,14 +646,33 @@ export default function Pedido() {
           pedido.calificacion_restaurante == null && (
           <div className="confirmacion-card" style={{ marginTop: "1rem" }}>
             <p className="confirmacion-titulo">¿Cómo estuvo el restaurante?</p>
-            <StarRating value={calificacion} onChange={setCalificacion} />
+            <StarRating value={calificacionRestaurante} onChange={setCalificacionRestaurante} />
+            {errorConfirmar && (
+              <p className="form-error" style={{ marginTop: "0.6rem" }}>{errorConfirmar}</p>
+            )}
             <button
               className="btn btn-block"
               style={{ marginTop: "0.6rem" }}
               onClick={handleCalificarRestaurante}
+              disabled={calificandoRestaurante}
             >
-              Enviar calificación
+              {calificandoRestaurante ? "Enviando..." : "Enviar calificación"}
             </button>
+          </div>
+        )}
+
+        {/* ── Restaurante ya calificado ────────────────────────────────── */}
+        {rol === "cliente" && pedido.calificacion_restaurante != null && (
+          <div className="confirmacion-card confirmacion-card--ok" style={{ marginTop: "1rem" }}>
+            <p className="confirmacion-titulo">¡Gracias por tu calificación!</p>
+            <p className="confirmacion-sub">
+              Le diste{" "}
+              <strong>
+                {"★".repeat(pedido.calificacion_restaurante)}
+                {"☆".repeat(5 - pedido.calificacion_restaurante)}
+              </strong>{" "}
+              al restaurante.
+            </p>
           </div>
         )}
 

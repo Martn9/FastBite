@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
   const { usuario, rol, isAuthenticated, logout } = useAuth();
   const { items } = useCart();
+  const { tema, toggleTema } = useTheme();
   const navigate = useNavigate();
 
   const cantidadTotal = items.reduce((acc, i) => acc + i.cantidad, 0);
@@ -21,7 +23,10 @@ export default function Navbar() {
       </Link>
       <nav>
         {rol === "restaurante" ? (
-        <Link to="/restaurante">Mi panel</Link>
+        <>
+          <Link to="/restaurante">Mi panel</Link>
+          <Link to="/restaurante/en-curso">Pedido en curso</Link>
+        </>
       ) : rol !== "repartidor" ? (
         <Link to="/">Restaurantes</Link>
       ) : null}
@@ -39,12 +44,22 @@ export default function Navbar() {
       )}
       {isAuthenticated && rol !== null && rol !== "restaurante" && (
         <Link to="/mis-pedidos">
-          {rol === "admin" ? "Todos los pedidos" : "Mis pedidos"}
+          {rol === "admin" ? "Todos los pedidos" : rol === "repartidor" ? "Historial de entregas" : "Mis pedidos"}
         </Link>
       )}
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={toggleTema}
+          aria-label="Cambiar tema"
+          title={tema === "claro" ? "Cambiar a modo oscuro" : "Cambiar a modo claro"}
+        >
+          {tema === "claro" ? "🌙" : "☀️"}
+        </button>
         {isAuthenticated ? (
           <>
             {rol === "cliente" && <Link to="/perfil">Mi perfil</Link>}
+            {rol === "repartidor" && <Link to="/perfil-repartidor">Mi perfil</Link>}
             <span className="role-tag">
               {usuario} · {rol}
             </span>

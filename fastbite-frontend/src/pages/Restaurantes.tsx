@@ -1,9 +1,16 @@
+// Cambia respecto al original:
+// 1. Importa useFavoriteRestaurantes y FavButton
+// 2. Agrega el botón ♡/♥ en cada tarjeta
+// 3. Agrega una sección "Tus favoritos" arriba del listado completo
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as api from "../api/client";
-import type { Restaurante, Producto } from "../types";
+import type { Restaurante } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
+import { useFavoriteRestaurantes } from "../hooks/useFavorites";
+import FavButton from "../components/FavButton";
+import RestaurantBanner from "../components/RestaurantBanner";
 
 const CATEGORIA_EMOJI: Record<string, string> = {
   Hamburguesas: "🍔",
@@ -18,65 +25,25 @@ const CATEGORIA_EMOJI: Record<string, string> = {
   Postres: "🍰",
 };
 
-type PromoConRestaurante = Producto & { restauranteNombre: string };
-
-function parseDescuento(p: Producto) {
-  const texto = `${p.nombre} ${p.descripcion}`;
-  const porcentajeMatch = texto.match(/(\d+)\s*%\s*(OFF|de descuento|dcto)/i);
-  const antesMatch = p.descripcion.match(/Antes\s*\$?\s*([\d.,]+)/i);
-  const precioOriginal = antesMatch
-    ? Number(antesMatch[1].replace(/\./g, "").replace(",", "."))
-    : undefined;
-  return {
-    porcentaje: porcentajeMatch ? Number(porcentajeMatch[1]) : undefined,
-    precioOriginal,
-  };
-}
-
 export default function Restaurantes() {
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
-  const [promos, setPromos] = useState<PromoConRestaurante[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [cargandoPromos, setCargandoPromos] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [heroVisible, setHeroVisible] = useState(false);
   const { usuario, rol } = useAuth();
-  const { agregar } = useCart();
+  const { isFav, toggle } = useFavoriteRestaurantes();
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 30);
-
     api
       .listarRestaurantes()
-      .then(async (lista) => {
-        setRestaurantes(lista);
-        setCargando(false);
-
-        // Trae las promos de los 6 restaurantes en paralelo para la
-        // vitrina destacada de la página principal.
-        const porRestaurante = await Promise.all(
-          lista.map((r) =>
-            api
-              .listarProductos(r.id)
-              .then((productos) =>
-                productos
-                  .filter((p) => p.categoria === "Promociones")
-                  .map((p) => ({ ...p, restauranteNombre: r.nombre })),
-              )
-              .catch(() => [] as PromoConRestaurante[]),
-          ),
-        );
-        setPromos(porRestaurante.flat());
-        setCargandoPromos(false);
-      })
-      .catch(() => {
-        setError("No se pudo conectar con la API de FastBite.");
-        setCargando(false);
-        setCargandoPromos(false);
-      });
-
+      .then(setRestaurantes)
+      .catch(() => setError("No se pudo conectar con la API de FastBite."))
+      .finally(() => setCargando(false));
     return () => clearTimeout(t);
   }, []);
+
+  const favoritos = restaurantes.filter((r) => isFav(r.id));
 
   return (
     <div className="page">
@@ -101,61 +68,6 @@ export default function Restaurantes() {
         )}
       </div>
 
-      {/* Vitrina de promociones de todos los restaurantes */}
-      {!cargandoPromos && promos.length > 0 && (
-        <div className="promo-section">
-          <p className="product-section-title">🔥 Promociones destacadas</p>
-          <div className="promo-carousel">
-            {promos.map((p, i) => {
-              const { porcentaje, precioOriginal } = parseDescuento(p);
-              return (
-                <div
-                  className="promo-card card-enter"
-                  key={`${p.restauranteNombre}-${p.id}`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
-                >
-                  {porcentaje && (
-                    <span className="promo-discount-badge">-{porcentaje}%</span>
-                  )}
-                  {p.imagen_url && (
-                    <img
-                      src={p.imagen_url}
-                      alt={p.nombre}
-                      className="promo-card-img"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  )}
-                  <div className="promo-card-body">
-                    <span className="promo-restaurant-tag">{p.restauranteNombre}</span>
-                    <h4>{p.nombre}</h4>
-                    <p>{p.descripcion}</p>
-                    <div className="promo-card-footer">
-                      <div className="promo-price-group">
-                        {precioOriginal && (
-                          <span className="promo-price-original">
-                            ${precioOriginal.toLocaleString("es-CL")}
-                          </span>
-                        )}
-                        <span className="price">${p.precio.toLocaleString("es-CL")}</span>
-                      </div>
-                      <button
-                        className="btn"
-                        disabled={!p.disponible}
-                        onClick={() => agregar(p)}
-                      >
-                        {p.disponible ? "Agregar" : "Sin stock"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {cargando && (
         <div className="card-grid">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -172,45 +84,77 @@ export default function Restaurantes() {
       {error && <p className="form-error">{error}</p>}
 
       {!cargando && !error && restaurantes.length === 0 && (
-        <div className="empty-state">
-          Todavía no hay restaurantes cargados.
-        </div>
+        <div className="empty-state">Todavía no hay restaurantes cargados.</div>
+      )}
+
+      {/* ── Sección de favoritos ── */}
+      {favoritos.length > 0 && (
+        <>
+          <p className="product-section-title">❤️ Tus favoritos</p>
+          <div className="card-grid" style={{ marginBottom: "2rem" }}>
+            {favoritos.map((r) => (
+              <RestauranteCard key={r.id} r={r} isFav={true} onToggleFav={() => toggle(r.id)} />
+            ))}
+          </div>
+          <p className="product-section-title">🍽️ Todos los restaurantes</p>
+        </>
       )}
 
       {!cargando && !error && restaurantes.length > 0 && (
         <div className="card-grid">
-          {restaurantes.map((r, i) => (
-            <Link
-              key={r.id}
-              to={`/restaurantes/${r.id}`}
-              className="card card-enter card-with-banner"
-              style={{ animationDelay: `${i * 0.07}s` }}
-            >
-              {r.imagen_url ? (
-                <div
-                  className="card-banner"
-                  style={{ backgroundImage: `url(${r.imagen_url})` }}
-                >
-                  <span className="card-banner-overlay" />
-                </div>
-              ) : (
-                <div className="card-banner card-banner-fallback">
-                  <span>{CATEGORIA_EMOJI[r.categoria] ?? "🍽️"}</span>
-                </div>
-              )}
-              <div className="card-body">
-                <span className="eyebrow">{r.categoria}</span>
-                <h3>{r.nombre}</h3>
-                <p>{r.descripcion}</p>
-                <div className="card-footer">
-                  <span className="meta">🕐 {r.horario}</span>
-                  <span className="delivery-badge">🛵 {r.tiempo_entrega}</span>
-                </div>
-              </div>
-            </Link>
+          {restaurantes.map((r) => (
+            <RestauranteCard key={r.id} r={r} isFav={isFav(r.id)} onToggleFav={() => toggle(r.id)} />
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Subcomponente tarjeta de restaurante ─────────────────────────────────────
+
+function RestauranteCard({
+  r,
+  isFav,
+  onToggleFav,
+}: {
+  r: Restaurante;
+  isFav: boolean;
+  onToggleFav: () => void;
+}) {
+  return (
+    <div style={{ position: "relative" }}>
+      <Link to={`/restaurantes/${r.id}`} className="card card-with-banner">
+        <RestaurantBanner imagenUrl={r.imagen_url} categoria={r.categoria} />
+        <div className="card-body">
+          <span className="eyebrow">{r.categoria}</span>
+          <h3>{r.nombre}</h3>
+          <p>{r.descripcion}</p>
+          <div className="card-footer">
+            <span className="meta">🕐 {r.horario}</span>
+            <span className="delivery-badge">🛵 {r.tiempo_entrega}</span>
+          </div>
+        </div>
+      </Link>
+      {/* El botón va fuera del <Link> para evitar navegación al hacer clic */}
+      <div
+        style={{
+          position: "absolute",
+          top: "0.8rem",
+          right: "0.8rem",
+          zIndex: 10,
+          background: "rgba(255,255,255,0.9)",
+          borderRadius: "50%",
+          width: 34,
+          height: 34,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+        }}
+      >
+        <FavButton isFav={isFav} onToggle={onToggleFav} size="sm" />
+      </div>
     </div>
   );
 }

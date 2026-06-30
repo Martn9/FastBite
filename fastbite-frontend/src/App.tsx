@@ -12,7 +12,9 @@ import PedidosEnCurso from "./pages/PedidosEnCurso";
 import MisPedidos from "./pages/MisPedidos";
 import Rechazados from "./pages/Rechazados";
 import Perfil from "./pages/Perfil";
+import PerfilRepartidor from "./pages/PerfilRepartidor";
 import RestaurantePanel from "./pages/RestaurantePanel";
+import RestauranteEnCurso from "./pages/RestauranteEnCurso";
 
 export default function App() {
   const { rol } = useAuth();
@@ -52,7 +54,9 @@ export default function App() {
         <Route path="/mis-pedidos" element={<MisPedidos />} />
         <Route path="/rechazados" element={<Rechazados />} />
         <Route path="/restaurante" element={<RestaurantePanel />} />
+        <Route path="/restaurante/en-curso" element={<RestauranteEnCurso />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/perfil-repartidor" element={<PerfilRepartidor />} />
         <Route path="/pedidos/:id" element={<Pedido />} />
       </Routes>
     </div>

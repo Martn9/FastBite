@@ -131,6 +131,26 @@ def listar_en_curso(request):
     return list(pedidos)
 
 
+@router.get("/pedidos/entregados", response=List[PedidoSchema], auth=jwt_auth)
+def listar_entregados(request):
+    """Solo repartidor: historial de pedidos que él mismo entregó."""
+    pedidos = services.listar_entregados_repartidor(request.auth)
+    for p in pedidos:
+        p.pin_entrega = None
+    return list(pedidos)
+
+
+class CalificacionPromedioSchema(Schema):
+    promedio: float
+    total_calificaciones: int
+
+
+@router.get("/repartidor/calificacion", response=CalificacionPromedioSchema, auth=jwt_auth)
+def calificacion_repartidor(request):
+    """Solo repartidor: promedio de calificación recibida y total de votos."""
+    return services.calificacion_promedio_repartidor(request.auth)
+
+
 @router.post("/pedidos/{pedido_id}/renunciar", response=PedidoSchema, auth=jwt_auth)
 def renunciar_pedido(request, pedido_id: int):
     """Un repartidor renuncia a un pedido que ya tiene asignado."""

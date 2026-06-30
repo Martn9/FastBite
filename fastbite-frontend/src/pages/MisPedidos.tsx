@@ -17,9 +17,13 @@ export default function MisPedidos() {
   const { repetir, cargando: repCargando, error: repError } = useRepeatOrder();
   const [repetiendo, setRepitiendo] = useState<number | null>(null);
 
+  const titulo = rol === "repartidor" ? "Historial de pedidos entregados" : "Mis pedidos";
+
   const subtitulo =
     rol === "admin"
       ? "Vista general de todos los pedidos"
+      : rol === "repartidor"
+      ? "Pedidos que entregaste exitosamente"
       : "El historial de todo lo que has pedido";
 
   // Callback que ListaPedidos puede llamar por cada pedido.
@@ -47,6 +51,7 @@ export default function MisPedidos() {
       )}
       <ListaPedidosConRepetir
         rol={rol}
+        titulo={titulo}
         subtitulo={subtitulo}
         onRepetir={rol === "cliente" ? handleRepetir : undefined}
         repetiendo={repetiendo}
@@ -60,12 +65,14 @@ export default function MisPedidos() {
 
 function ListaPedidosConRepetir({
   rol,
+  titulo,
   subtitulo,
   onRepetir,
   repetiendo,
   repCargando,
 }: {
   rol: string | null;
+  titulo: string;
   subtitulo: string;
   onRepetir?: (id: number, pedido: Pedido) => void;
   repetiendo: number | null;
@@ -87,9 +94,9 @@ function ListaPedidosConRepetir({
 
   return (
     <ListaPedidosConBotonRepetir
-      titulo="Mis pedidos"
+      titulo={titulo}
       subtitulo={subtitulo}
-      cargarPedidos={api.listarMisPedidos}
+      cargarPedidos={rol === "repartidor" ? api.listarEntregados : api.listarMisPedidos}
       onRepetir={onRepetir}
       repetiendo={repetiendo}
       repCargando={repCargando}

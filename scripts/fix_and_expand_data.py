@@ -12,16 +12,19 @@ django.setup()
 from django.contrib.auth.models import User
 from catalogo.models import Restaurante, Producto
 
-# Foto de portada (banner ancho) por restaurante. Para McDonald's se usa una
-# imagen temática de combo/papas en vez del logo real, ya que el logo oficial
-# es una marca registrada y no debe reproducirse.
+# Foto de portada (banner ancho) por restaurante. Se reutilizan IDs de fotos
+# que YA están confirmadas funcionando en el fixture (mismas que los productos
+# que ya se ven bien en la app), para no depender de adivinar IDs nuevos de
+# Unsplash que podrían no existir y dejar el banner en blanco.
+# Para McDonald's se usa una imagen temática de combo/papas en vez del logo
+# real, ya que el logo oficial es una marca registrada y no debe reproducirse.
 BANNERS = {
-    "La Burger Clásica": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80",
-    "Pizza Nostra": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&q=80",
-    "Sushi Zen": "https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&q=80",
-    "Taco Loco": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=1200&q=80",
-    "Pollo Express": "https://images.unsplash.com/photo-1626082927389-6cd097cee6a6?w=1200&q=80",
-    "McDonald's": "https://images.unsplash.com/photo-1619881589316-9362dac6f4a8?w=1200&q=80",
+    "La Burger Clásica": "https://images.unsplash.com/photo-1508736793122-f516e3ba5569?w=1200&q=80",
+    "Pizza Nostra": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1200&q=80",
+    "Sushi Zen": "https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=1200&q=80",
+    "Taco Loco": "https://images.unsplash.com/photo-1599488400918-5f5f96b3f463?w=1200&q=80",
+    "Pollo Express": "https://images.unsplash.com/photo-1606728035253-49e8a23146de?w=1200&q=80",
+    "McDonald's": "https://images.unsplash.com/photo-1561758033-d89a9ad46330?w=1200&q=80",
 }
 
 # Promo (con descuento real) y postre propios por restaurante, para reemplazar

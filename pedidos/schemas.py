@@ -48,6 +48,11 @@ class PedidoSchema(Schema):
     # Confirmación y calificación del cliente
     confirmado_cliente: bool
     calificacion_repartidor: Optional[int] = None
+    calificacion_restaurante: Optional[int] = None
+
+    # Cancelación
+    cancelado_por: Optional[str] = None
+    cancelado_razon: Optional[str] = None
 
     # PIN solo visible para el cliente dueño del pedido
     # (el filtrado de quién lo ve se hace en el endpoint)

@@ -98,21 +98,36 @@ export async function listarProductos(
 
 // ─── Pedidos – cliente ────────────────────────────────────────────────────────
 
+export interface DatosPago {
+  numero_tarjeta?: string;
+  nombre_titular?: string;
+  vencimiento?: string;
+  cvv?: string;
+}
+
 export async function crearPedido(
   items: { producto_id: number; cantidad: number }[],
   tipo_entrega: string = "delivery",
   direccion_entrega?: string,
   codigo_cupon?: string,
   metodo_pago: string = "efectivo",
-  datos_pago?: { numero_tarjeta?: string; nombre_titular?: string; vencimiento?: string; cvv?: string }
+  datos_pago?: DatosPago
 ): Promise<Pedido> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ items, tipo_entrega, direccion_entrega, codigo_cupon, metodo_pago, datos_pago }),
+    body: JSON.stringify({
+      items,
+      tipo_entrega,
+      direccion_entrega,
+      codigo_cupon,
+      metodo_pago,
+      datos_pago,
+    }),
   });
   return parseOrThrow(res);
 }
+
 export async function validarCupon(codigo: string): Promise<{ valido: boolean; porcentaje: number; mensaje: string }> {
   const res = await fetch(`${BASE_URL}/pedidos/cupones/validar`, {
     method: "POST",
@@ -174,6 +189,18 @@ export async function listarRechazados(): Promise<Pedido[]> {
 
 export async function listarEntregados(): Promise<Pedido[]> {
   const res = await fetch(`${BASE_URL}/pedidos/pedidos/entregados`, {
+    headers: authHeader(),
+  });
+  return parseOrThrow(res);
+}
+
+export interface CalificacionPromedio {
+  promedio: number;
+  total_calificaciones: number;
+}
+
+export async function obtenerCalificacionRepartidor(): Promise<CalificacionPromedio> {
+  const res = await fetch(`${BASE_URL}/pedidos/repartidor/calificacion`, {
     headers: authHeader(),
   });
   return parseOrThrow(res);

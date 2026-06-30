@@ -208,6 +208,43 @@ def listar_rechazados(usuario):
     )
 
 
+def listar_entregados_repartidor(usuario):
+    """
+    Historial de pedidos que este repartidor entrego exitosamente
+    (delivery -> entregado, retiro no aplica porque ahi no interviene
+    un repartidor).
+    """
+    if _rol(usuario) != "repartidor":
+        raise HttpError(403, "Solo un repartidor tiene historial de entregas")
+
+    return (
+        Pedido.objects.filter(repartidor=usuario, estado="entregado")
+        .prefetch_related("items__producto")
+        .order_by("-creado_en")
+    )
+
+
+def calificacion_promedio_repartidor(usuario):
+    """
+    Promedio de las calificaciones (1-5) que los clientes le han dado a
+    este repartidor en sus entregas, mas el total de pedidos calificados.
+    """
+    from django.db.models import Avg, Count
+
+    if _rol(usuario) != "repartidor":
+        raise HttpError(403, "Solo un repartidor tiene calificacion de repartidor")
+
+    agregados = Pedido.objects.filter(
+        repartidor=usuario, calificacion_repartidor__isnull=False
+    ).aggregate(promedio=Avg("calificacion_repartidor"), total=Count("id"))
+
+    promedio = agregados["promedio"] or 0
+    return {
+        "promedio": round(float(promedio), 2),
+        "total_calificaciones": agregados["total"] or 0,
+    }
+
+
 def rechazar_pedido(pedido_id: int, usuario):
     """
     Un repartidor rechaza un pedido disponible.
