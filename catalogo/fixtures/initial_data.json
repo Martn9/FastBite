@@ -196,6 +196,19 @@
 },
 {
   "model": "catalogo.producto",
+  "pk": 10,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "PROMO 2 Pizzas Medianas",
+    "descripcion": "Elige 2 pizzas medianas a precio especial",
+    "precio": "15900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1589623998286-a1540efa0a9e?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
   "pk": 11,
   "fields": {
     "restaurante": 3,
@@ -313,6 +326,19 @@
 },
 {
   "model": "catalogo.producto",
+  "pk": 20,
+  "fields": {
+    "restaurante": 4,
+    "nombre": "PROMO Taco Tuesday",
+    "descripcion": "3 tacos a elección + refresco de horchata",
+    "precio": "7900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
   "pk": 21,
   "fields": {
     "restaurante": 5,
@@ -361,6 +387,19 @@
     "categoria": "Combos",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1611489142329-5f62cfa43e6e?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 25,
+  "fields": {
+    "restaurante": 5,
+    "nombre": "PROMO Pollo + Papas",
+    "descripcion": "1/4 pollo broaster + papas grandes + bebida",
+    "precio": "6490.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1683657860906-d49d1bb37aab?w=400"
   }
 },
 {
@@ -599,6 +638,19 @@
 },
 {
   "model": "catalogo.producto",
+  "pk": 44,
+  "fields": {
+    "restaurante": 1,
+    "nombre": "Promo 20% - Combo Especial",
+    "descripcion": "Combo en promoción especial con descuento directo en el precio.",
+    "precio": "8000.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
   "pk": 45,
   "fields": {
     "restaurante": 1,
@@ -608,6 +660,19 @@
     "categoria": "Postres",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 46,
+  "fields": {
+    "restaurante": 2,
+    "nombre": "Promo 20% - Combo Especial",
+    "descripcion": "Combo en promoción especial con descuento directo en el precio.",
+    "precio": "8000.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
   }
 },
 {
@@ -625,6 +690,19 @@
 },
 {
   "model": "catalogo.producto",
+  "pk": 48,
+  "fields": {
+    "restaurante": 3,
+    "nombre": "Promo 20% - Combo Especial",
+    "descripcion": "Combo en promoción especial con descuento directo en el precio.",
+    "precio": "8000.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
   "pk": 49,
   "fields": {
     "restaurante": 3,
@@ -638,6 +716,19 @@
 },
 {
   "model": "catalogo.producto",
+  "pk": 50,
+  "fields": {
+    "restaurante": 4,
+    "nombre": "Promo 20% - Combo Especial",
+    "descripcion": "Combo en promoción especial con descuento directo en el precio.",
+    "precio": "8000.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
   "pk": 51,
   "fields": {
     "restaurante": 4,
@@ -647,6 +738,19 @@
     "categoria": "Postres",
     "disponible": true,
     "imagen_url": "https://plus.unsplash.com/premium_photo-1714180194796-8cb272b0bfed?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 52,
+  "fields": {
+    "restaurante": 5,
+    "nombre": "Promo 20% - Combo Especial",
+    "descripcion": "Combo en promoción especial con descuento directo en el precio.",
+    "precio": "8000.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1594212848518-7858c256f6c2?auto=format&fit=crop&q=80&w=400"
   }
 },
 {
@@ -807,6 +911,19 @@
 },
 {
   "model": "catalogo.producto",
+  "pk": 65,
+  "fields": {
+    "restaurante": 1,
+    "nombre": "PROMO 2 Burgers Clásicas (25% OFF)",
+    "descripcion": "Antes $11.800, ahora $8.850 por 2 Burger Clásica. 25% de descuento pidiendo de a dos.",
+    "precio": "8850.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://images.unsplash.com/photo-1508736793122-f516e3ba5569?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
   "pk": 66,
   "fields": {
     "restaurante": 2,
@@ -855,6 +972,19 @@
     "categoria": "Promociones",
     "disponible": true,
     "imagen_url": "https://images.unsplash.com/photo-1624153064067-566cae78993d?w=400"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 70,
+  "fields": {
+    "restaurante": 3,
+    "nombre": "Combo Roll California + Té",
+    "descripcion": "Roll California + Té Verde. Precio combo fijo.",
+    "precio": "7900.00",
+    "categoria": "Promociones",
+    "disponible": true,
+    "imagen_url": "https://plus.unsplash.com/premium_photo-1667545168921-34f756495d7b?w=400"
   }
 },
 {
